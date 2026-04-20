@@ -178,6 +178,13 @@
 
 ## 系统架构
 
+<p align="center">
+  <img src="docs/images/tourskill-infographic.png" alt="TourSkill 系统架构信息图" width="800" />
+</p>
+
+<details>
+<summary>文字版本（点击展开）</summary>
+
 ```
                            ┌─────────────────────────────────┐
                            │        前端 (React)              │
@@ -208,6 +215,8 @@
                                   │  └──────────────┘ │   │                   │
                                   └──────────────────┘   └───────────────────┘
 ```
+
+</details>
 
 ### 商家技能系统
 

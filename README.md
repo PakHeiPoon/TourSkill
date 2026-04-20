@@ -191,6 +191,13 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
 
 ## Architecture
 
+<p align="center">
+  <img src="docs/images/tourskill-infographic.png" alt="TourSkill Architecture Infographic" width="800" />
+</p>
+
+<details>
+<summary>Text Version (Click to Expand)</summary>
+
 ```
                            ┌─────────────────────────────────┐
                            │        Frontend (React)          │
@@ -223,6 +230,8 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
                                   │  └──────────────┘ │   └───────────────────┘
                                   └──────────────────┘
 ```
+
+</details>
 
 ### Merchant Skill System
 

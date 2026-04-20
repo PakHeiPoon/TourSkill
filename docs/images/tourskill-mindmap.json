@@ -1,0 +1,146 @@
+{
+  "name": "TourSkill",
+  "children": [
+    {
+      "name": "核心问题",
+      "children": [
+        {
+          "name": "平台垄断"
+        },
+        {
+          "name": "定价幻觉"
+        },
+        {
+          "name": "寻租行为"
+        },
+        {
+          "name": "缺乏控制权"
+        }
+      ]
+    },
+    {
+      "name": "愿景与原理",
+      "children": [
+        {
+          "name": "去中心化注册表"
+        },
+        {
+          "name": "点对点交易"
+        },
+        {
+          "name": "智能体直接对话"
+        },
+        {
+          "name": "启发自比特币白皮书"
+        }
+      ]
+    },
+    {
+      "name": "商家技能系统",
+      "children": [
+        {
+          "name": "餐厅技能",
+          "children": [
+            {
+              "name": "查询菜单"
+            },
+            {
+              "name": "预订桌位"
+            },
+            {
+              "name": "饮食选项"
+            }
+          ]
+        },
+        {
+          "name": "酒店技能",
+          "children": [
+            {
+              "name": "查询房费"
+            },
+            {
+              "name": "创建预订"
+            },
+            {
+              "name": "取消政策"
+            }
+          ]
+        },
+        {
+          "name": "景点技能",
+          "children": [
+            {
+              "name": "门票库存"
+            },
+            {
+              "name": "开放时间"
+            },
+            {
+              "name": "购买门票"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "核心特性",
+      "children": [
+        {
+          "name": "MCP协议集成"
+        },
+        {
+          "name": "链上身份验证"
+        },
+        {
+          "name": "用户驱动AI推理"
+        },
+        {
+          "name": "自主迭代智能体"
+        },
+        {
+          "name": "多城市数据覆盖"
+        }
+      ]
+    },
+    {
+      "name": "技术栈",
+      "children": [
+        {
+          "name": "React 19 + TypeScript"
+        },
+        {
+          "name": "Solidity + Hardhat"
+        },
+        {
+          "name": "FastAPI + Supabase"
+        },
+        {
+          "name": "0G Network"
+        },
+        {
+          "name": "MetaMask"
+        }
+      ]
+    },
+    {
+      "name": "路线图",
+      "children": [
+        {
+          "name": "MVP阶段 (已完成)"
+        },
+        {
+          "name": "多智能体协商 (规划)"
+        },
+        {
+          "name": "x402 P2P支付 (规划)"
+        },
+        {
+          "name": "链上信誉系统 (规划)"
+        },
+        {
+          "name": "移动端语音智能体 (规划)"
+        }
+      ]
+    }
+  ]
+}
