@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+  <img src="docs/images/tourskill-logo.png" alt="TourSkill Logo" width="140" />
+</p>
+
+<p align="center">
   <strong>打破 OTA 垄断 —— 智能体对智能体的旅游新范式</strong>
 </p>
 

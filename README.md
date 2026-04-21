@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+  <img src="docs/images/tourskill-logo.png" alt="TourSkill Logo" width="140" />
+</p>
+
+<p align="center">
   <strong>Breaking the OTA Monopoly — Agent-to-Agent Tourism, Powered by You</strong>
 </p>
 
