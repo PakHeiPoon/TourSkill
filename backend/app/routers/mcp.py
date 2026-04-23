@@ -82,7 +82,7 @@ async def mcp_execute_tool(request: Request):
                 "isError": True,
             }
 
-        result = execute_skill(skill, args)
+        result = execute_skill(skill, args, merchant)
         return {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, default=str)}]}
 
     if tool_name == "get_merchant_details":

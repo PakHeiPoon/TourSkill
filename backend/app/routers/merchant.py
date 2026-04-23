@@ -41,4 +41,4 @@ async def invoke_skill(merchant_id: str, skill_name: str, request: Request):
     if skill_name not in merchant.get("skills", []):
         raise HTTPException(status_code=400, detail=f"Skill {skill_name} not supported by merchant")
     payload = await request.json() if request.headers.get("content-type") == "application/json" else {}
-    return execute_skill(skill_name, payload)
+    return execute_skill(skill_name, payload, merchant)

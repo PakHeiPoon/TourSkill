@@ -38,11 +38,12 @@ pnpm-debug.log*
 contracts/cache/
 contracts/artifacts/
 
-# Seed scripts (contain mock data, not for prod)
-backend/scripts/seed_merchants.py
+# Seed scripts — kept in repo (used by seed_onchain_and_db.py as the canonical
+# merchant catalog for on-chain registration + Supabase seeding).
+# To re-seed: cd backend && python scripts/seed_onchain_and_db.py --wipe
 
-# SQL scripts (manual DB setup)
-backend/sql/
+# SQL schema — kept in repo so collaborators can set up Supabase locally.
+# To apply: paste backend/sql/001_create_merchants.sql into Supabase SQL editor.
 
 # Lock files (optional — uncomment if you want to track them)
 # package-lock.json
