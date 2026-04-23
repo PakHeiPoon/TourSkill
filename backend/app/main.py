@@ -5,13 +5,14 @@ from app.routers.mcp import router as mcp_router
 from app.routers.merchant import router as merchant_router
 
 app = FastAPI(title="TourSkill Registry API")
+
+# Public API — agents call from varied origins (Claude Code, Cursor, browser
+# frontends). Allow all origins; credentials disabled (incompatible with "*"
+# wildcard per the CORS spec anyway).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

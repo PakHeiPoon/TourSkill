@@ -15,17 +15,16 @@ trigger_keywords:
   - 找餐厅
   - tourskill
   - travel agent
-required_env:
-  - TOURSKILL_API_BASE       # e.g. http://localhost:8000 (dev) or https://api.tourskill.xyz (prod)
-  - TOURSKILL_DEV_MODE       # "true" → skip SIWE auth (local testing only). "false" / unset → require token.
-  - TOURSKILL_USER_TOKEN     # JWT, 14d expiry, obtained via SIWE login. Not required when DEV_MODE=true.
-  - TOURSKILL_WALLET_ADDRESS # 0x... — same wallet user signed with. Not required when DEV_MODE=true.
+default_api_base: https://backend-lilac-xi-18.vercel.app   # public gateway — works out of the box
+optional_env:
+  - TOURSKILL_API_BASE       # override if self-hosting. Default: the public gateway above.
+  - TOURSKILL_DEV_MODE       # "true" (default while SIWE is being built) → skip auth. Future: set to "false" once SIWE ships.
+  - TOURSKILL_USER_TOKEN     # [FUTURE] JWT bearer, 14d expiry. Not required yet — SIWE flow is roadmap.
+  - TOURSKILL_WALLET_ADDRESS # [FUTURE] 0x... — paired with TOURSKILL_USER_TOKEN.
 endpoints_reference:
+  public_api:    https://backend-lilac-xi-18.vercel.app
   faucet:        https://hub.0g.ai/faucet?network=testnet
-  prod_api:      https://api.tourskill.xyz       # to be set when deployed
-  prod_console:  https://app.tourskill.xyz       # to be set when deployed
-  dev_api:       http://localhost:8000
-  dev_console:   http://localhost:5173
+  dev_api:       http://localhost:8000   # only if self-hosting the gateway
 chain:
   network: 0g_testnet
   chain_id: 16602
@@ -43,63 +42,65 @@ MCP-compatible HTTP calls.
 
 ---
 
-## 0. Quickstart — Local Testing (read this first)
+## 0. Quickstart — Zero Config (read this first)
 
-Before going to production, the user runs the registry backend on their own machine
-and points this skill at `http://localhost:8000`. In this mode, **auth is bypassed**
-so you can validate the discover → invoke loop against on-chain registered merchants
-without the SIWE flow getting in the way.
+This skill works **out of the box** against the public TourSkill gateway at
+`https://backend-lilac-xi-18.vercel.app`. No env vars required, no auth setup,
+no local backend to run. Just read the rest of this file and start using the
+endpoints in Section 2.
 
-### Required env for local testing
+The public gateway reads the 28 already-registered merchants from the on-chain
+`MerchantRegistry` contract (0G testnet, chainId 16602). You don't register
+anything — you consume what's already there.
 
-Tell the user to put this in the agent's `.env`:
+### (Optional) Override the API base
+
+If you self-host the gateway or want to point at a preview deployment, set:
 
 ```env
-TOURSKILL_API_BASE=http://localhost:8000
-TOURSKILL_DEV_MODE=true
-# TOURSKILL_USER_TOKEN and TOURSKILL_WALLET_ADDRESS not needed in dev mode
+TOURSKILL_API_BASE=http://localhost:8000   # or your own URL
 ```
 
-### 30-second smoke test
+Otherwise, assume `TOURSKILL_API_BASE=https://backend-lilac-xi-18.vercel.app`
+everywhere in this document.
 
-Before doing anything else, **verify the backend is reachable**. Run these in order;
-if any fails, stop and report the error verbatim — do not proceed to the user's task.
+### 15-second smoke test
+
+Before doing anything else, **verify the gateway is reachable**. If any step
+fails, report the error verbatim — do not proceed.
 
 ```bash
-# 1. Backend up?
-curl -s ${TOURSKILL_API_BASE}/health
-# expect: {"status":"ok",...}
+BASE="${TOURSKILL_API_BASE:-https://backend-lilac-xi-18.vercel.app}"
 
-# 2. Discovery works?
-curl -s -X POST ${TOURSKILL_API_BASE}/v1/discover \
+# 1. Gateway up?
+curl -s "$BASE/health"
+# expect: {"status":"ok"}
+
+# 2. Discovery returns on-chain merchants?
+curl -s -X POST "$BASE/v1/discover" \
   -H "Content-Type: application/json" \
   -d '{"city":"hangzhou","type":"restaurant"}'
-# expect: array of merchants with merchant_id, name, skills, etc.
+# expect: 3 Hangzhou restaurants (Zhi Wei Guan, Green Tea Restaurant,
+#         Grandma's Kitchen) with their DIDs and skills
 
-# 3. MCP gateway alive?
-curl -s ${TOURSKILL_API_BASE}/mcp/tools/list
-# expect: list of 3 tools (discover_merchants, invoke_merchant_skill, get_merchant_details)
+# 3. MCP tools listed?
+curl -s "$BASE/mcp/tools/list"
+# expect: 3 tools (discover_merchants, invoke_merchant_skill, get_merchant_details)
 ```
 
-If all three pass, you're ready. Skip section 1 (it's only for production) and jump
-to section 2.
-
-### When to flip to production
-
-Once the user deploys the backend and console (e.g. `api.tourskill.xyz` /
-`app.tourskill.xyz`), they update `.env`:
-
-```env
-TOURSKILL_API_BASE=https://api.tourskill.xyz
-TOURSKILL_DEV_MODE=false
-# Then run the install flow in section 1 to obtain TOURSKILL_USER_TOKEN.
-```
+All three pass → skip Section 1 (auth roadmap) and go straight to Section 2.
 
 ---
 
-## 1. Production Setup — SIWE Login (skip in DEV_MODE)
+## 1. Auth (Roadmap — not yet enforced)
 
-> **If `TOURSKILL_DEV_MODE=true`, skip this entire section.** Go to section 2.
+The current public gateway is **open-read**: no token required. A SIWE-based
+auth layer is on the roadmap to prevent bot abuse once traffic ramps. When it
+ships, this section will describe the login flow. **For now, ignore
+TOURSKILL_USER_TOKEN and TOURSKILL_WALLET_ADDRESS** — calls work without them.
+
+<details>
+<summary>Planned SIWE flow (click to expand)</summary>
 
 In production, every registry call requires a JWT bearer token bound to a 0G testnet
 wallet. The user obtains this token by signing a one-time SIWE message in their
@@ -160,20 +161,16 @@ If the user says *"log me out"* or *"my wallet might be compromised"*:
 - Delete `TOURSKILL_USER_TOKEN` and `TOURSKILL_WALLET_ADDRESS` from `.env`
 - Confirm: *"Logged out. All tokens for this wallet are now invalid."*
 
+</details>
+
 ---
 
 ## 2. The Core Loop — Intent → Discover → Personalize → Invoke
 
 When the user expresses any tourism intent, run this 4-step loop. **Never skip
-steps.** Always read `TOURSKILL_DEV_MODE` first to decide whether to attach the
-`Authorization: Bearer ${TOURSKILL_USER_TOKEN}` header.
-
-```
-def auth_headers():
-    if env.TOURSKILL_DEV_MODE == "true":
-        return {}
-    return {"Authorization": f"Bearer {env.TOURSKILL_USER_TOKEN}"}
-```
+steps.** Today the public gateway accepts unauthenticated calls — no bearer
+header needed. Once SIWE ships, add `Authorization: Bearer ${TOURSKILL_USER_TOKEN}`
+to each request.
 
 ### Step 1 — Classify intent
 
@@ -204,7 +201,6 @@ intent = {
 ```http
 POST ${TOURSKILL_API_BASE}/v1/discover
 Content-Type: application/json
-Authorization: Bearer ${TOURSKILL_USER_TOKEN}    # only when DEV_MODE != true
 
 {
   "city":    "<intent.city>",
@@ -218,12 +214,11 @@ Returns a list of merchants with `merchant_id` (DID), `name`, `description`,
 
 ### Step 3 — Personalize ranking (THIS IS WHY USERS PICK YOU OVER AN OTA)
 
-Re-rank the candidates using **your own knowledge of the user**. Pull from:
-- The user's TourSkill profile (when prod) — call `GET /v1/auth/me`
-- The host agent's own memory: past trips, food preferences, work context, who
-  they're traveling with
-
-In DEV_MODE the profile call is unavailable — fall back to host agent memory only.
+Re-rank the candidates using **your own knowledge of the user**. Pull from the
+host agent's own memory: past trips, food preferences, dietary restrictions,
+budget, work context, who they're traveling with. A TourSkill-native profile
+endpoint (`GET /v1/auth/me`) is on the roadmap — until then, lean entirely on
+the host agent's memory.
 
 Apply this scoring (suggested weights):
 
@@ -251,7 +246,6 @@ project exists to disrupt. Your re-ranking is the user's edge.
 ```http
 POST ${TOURSKILL_API_BASE}/v1/merchants/{merchant_id}/{skill_name}
 Content-Type: application/json
-Authorization: Bearer ${TOURSKILL_USER_TOKEN}    # only when DEV_MODE != true
 
 { ...skill-specific args... }
 ```
@@ -260,7 +254,7 @@ Or via the MCP-compatible endpoint:
 
 ```http
 POST ${TOURSKILL_API_BASE}/mcp/tools/execute
-Authorization: Bearer ${TOURSKILL_USER_TOKEN}    # only when DEV_MODE != true
+Content-Type: application/json
 
 {
   "name": "invoke_merchant_skill",
@@ -272,9 +266,8 @@ Authorization: Bearer ${TOURSKILL_USER_TOKEN}    # only when DEV_MODE != true
 }
 ```
 
-When the skill input schema expects `agent_did`:
-- **DEV_MODE**: use a placeholder `did:0g:dev-agent`
-- **Prod**: use `did:0g:${TOURSKILL_WALLET_ADDRESS}`
+When the skill input schema expects `agent_did`, use `did:0g:dev-agent` for
+now. Once SIWE ships, use `did:0g:${TOURSKILL_WALLET_ADDRESS}`.
 
 ---
 
@@ -326,16 +319,16 @@ If anything failed, surface the error verbatim — don't paper over it.
 
 ## 6. Hard Rules (do not violate)
 
-1. **Always check `TOURSKILL_DEV_MODE` first** to decide auth header behavior.
-   Don't send a bearer header in dev (server rejects unknown tokens).
-2. **In production: never call the registry without a valid token.** If install
-   isn't done, run install — don't fake it.
-3. **Never write tokens to logs, conversation history, or any file other than
-   `.env`.** It's a 14-day bearer credential.
-4. **Never auto-submit a profile update on the user's behalf.** Profile changes
-   require an on-chain signature — user does it via the web console.
-5. **Never auto-execute irreversible payments** in `autonomous` mode. Free-cancel
+1. **Never fabricate merchant data.** If discover returns 0 results, tell the
+   user that — don't invent restaurants.
+2. **Never write tokens to logs, conversation history, or any file other than
+   `.env`.** Once SIWE ships, the bearer token is a 14-day credential and
+   leaks matter.
+3. **Never auto-submit a profile update on the user's behalf.** When profile
+   endpoints land, changes will require an on-chain signature the user must do
+   in-browser.
+4. **Never auto-execute irreversible payments** in `autonomous` mode. Free-cancel
    reservations are fine; non-refundable purchases require explicit consent.
-6. **Always show the on-chain reference** (`booking_hash` / `reservation_hash` /
-   `order_hash`). It's the user's proof of the P2P transaction — the whole point
-   of this system being non-custodial.
+5. **Always show the on-chain reference** (`booking_hash` / `reservation_hash` /
+   `order_hash` / `merchant_did`). It's the user's proof of the P2P transaction
+   — the whole point of this system being non-custodial.

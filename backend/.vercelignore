@@ -1,0 +1,14 @@
+# Exclude local env files from being uploaded into the function bundle.
+# Production env vars must be set via `vercel env add` instead.
+.env
+.env.local
+.env.*.local
+
+# Local dev virtualenv — never ship
+venv/
+__pycache__/
+*.pyc
+
+# Internal-only tooling (mirrors .gitignore's scripts/sql exclusions)
+scripts/
+sql/
