@@ -15,14 +15,14 @@ trigger_keywords:
   - 找餐厅
   - tourskill
   - travel agent
-default_api_base: https://backend-lilac-xi-18.vercel.app   # public gateway — works out of the box
+default_api_base: https://api.tourskill.paking.xyz   # public gateway — works out of the box
 optional_env:
   - TOURSKILL_API_BASE       # override if self-hosting. Default: the public gateway above.
   - TOURSKILL_DEV_MODE       # "true" (default while SIWE is being built) → skip auth. Future: set to "false" once SIWE ships.
   - TOURSKILL_USER_TOKEN     # [FUTURE] JWT bearer, 14d expiry. Not required yet — SIWE flow is roadmap.
   - TOURSKILL_WALLET_ADDRESS # [FUTURE] 0x... — paired with TOURSKILL_USER_TOKEN.
 endpoints_reference:
-  public_api:    https://backend-lilac-xi-18.vercel.app
+  public_api:    https://api.tourskill.paking.xyz
   faucet:        https://hub.0g.ai/faucet?network=testnet
   dev_api:       http://localhost:8000   # only if self-hosting the gateway
 chain:
@@ -45,7 +45,7 @@ MCP-compatible HTTP calls.
 ## 0. Quickstart — Zero Config (read this first)
 
 This skill works **out of the box** against the public TourSkill gateway at
-`https://backend-lilac-xi-18.vercel.app`. No env vars required, no auth setup,
+`https://api.tourskill.paking.xyz`. No env vars required, no auth setup,
 no local backend to run. Just read the rest of this file and start using the
 endpoints in Section 2.
 
@@ -61,7 +61,7 @@ If you self-host the gateway or want to point at a preview deployment, set:
 TOURSKILL_API_BASE=http://localhost:8000   # or your own URL
 ```
 
-Otherwise, assume `TOURSKILL_API_BASE=https://backend-lilac-xi-18.vercel.app`
+Otherwise, assume `TOURSKILL_API_BASE=https://api.tourskill.paking.xyz`
 everywhere in this document.
 
 ### 15-second smoke test
@@ -70,7 +70,7 @@ Before doing anything else, **verify the gateway is reachable**. If any step
 fails, report the error verbatim — do not proceed.
 
 ```bash
-BASE="${TOURSKILL_API_BASE:-https://backend-lilac-xi-18.vercel.app}"
+BASE="${TOURSKILL_API_BASE:-https://api.tourskill.paking.xyz}"
 
 # 1. Gateway up?
 curl -s "$BASE/health"

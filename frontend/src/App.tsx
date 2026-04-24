@@ -183,7 +183,7 @@ function Layout() {
           <div className="flex space-x-6">
             <a href="https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">Contract</a>
-            <a href="https://backend-lilac-xi-18.vercel.app/skills/user-client/SKILL.md" target="_blank" rel="noreferrer"
+            <a href="https://api.tourskill.paking.xyz/skills/user-client/SKILL.md" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">SKILL.md</a>
             <a href="https://github.com/PakHeiPoon/TourSkill" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">GitHub</a>

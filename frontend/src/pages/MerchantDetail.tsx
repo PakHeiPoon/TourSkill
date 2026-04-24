@@ -16,7 +16,7 @@ import {
   Check,
 } from 'lucide-react'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend-lilac-xi-18.vercel.app'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 const REGISTRY_CONTRACT = '0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543'
 const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
 const CHAINSCAN_TX = 'https://chainscan-galileo.0g.ai/tx'

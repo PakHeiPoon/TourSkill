@@ -210,7 +210,7 @@ export default function AgentLoopDemo(): React.JSX.Element {
       <p className="text-center text-text-muted text-sm mt-6">
         Want to actually try it?{' '}
         <a
-          href="https://backend-lilac-xi-18.vercel.app/skills/user-client/SKILL.md"
+          href="https://api.tourskill.paking.xyz/skills/user-client/SKILL.md"
           target="_blank"
           rel="noreferrer"
           className="text-primary hover:text-primary-hover font-semibold"

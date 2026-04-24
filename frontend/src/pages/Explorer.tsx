@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { MapPin, Info, TerminalSquare, ExternalLink, Code2, Globe, X, Play, Loader2, ChevronDown } from 'lucide-react'
 import OnChainBadge from '../components/OnChainBadge'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend-lilac-xi-18.vercel.app'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
 const SKILL_PARAMS: Record<string, { label: string; fields: { name: string; type: string; placeholder: string; required?: boolean }[] }> = {
   check_availability: { label: 'Check Availability', fields: [

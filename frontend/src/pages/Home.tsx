@@ -13,8 +13,8 @@ import {
 import AgentLoopDemo from '../components/AgentLoopDemo'
 import Roadmap from '../components/Roadmap'
 
-const INSTALL_PROMPT = 'Install the TourSkill skill from https://backend-lilac-xi-18.vercel.app/skills/user-client/SKILL.md'
-const SKILL_URL = 'https://backend-lilac-xi-18.vercel.app/skills/user-client/SKILL.md'
+const INSTALL_PROMPT = 'Install the TourSkill skill from https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
+const SKILL_URL = 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
 
 type Audience = 'human' | 'agent' | null
 

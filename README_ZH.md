@@ -203,7 +203,7 @@ TourSkill 提供一份**客户端 SKILL.md 规范**——任何 AI agent（Claud
 
 让你的个人 agent 装载：
 
-> "从 `https://backend-lilac-xi-18.vercel.app/skills/user-client/SKILL.md` 安装 TourSkill 技能"
+> "从 `https://api.tourskill.paking.xyz/skills/user-client/SKILL.md` 安装 TourSkill 技能"
 
 SKILL.md 由 TourSkill 公共网关直接托管——和它描述的 API 同一个域名。不依赖 GitHub 访问。
 
