@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.constants.form_schema import FORM_SCHEMA
 from app.schemas.merchant import DiscoverRequest, MerchantCreateRequest, MerchantUpdateRequest
+from app.services.auth_service import resolve_token
 from app.services.merchant_service import create_merchant, discover_merchants, fetch_merchant_by_id, update_merchant
 from app.services.skill_service import execute_skill
+
+bearer_scheme = HTTPBearer(auto_error=True, description="Bearer token minted via /v1/auth/verify")
 
 router = APIRouter()
 
@@ -33,19 +37,20 @@ def get_merchant(merchant_id: str):
 def patch_merchant(
     merchant_id: str,
     payload: MerchantUpdateRequest,
-    x_wallet_address: str = Header(
-        ...,
-        alias="X-Wallet-Address",
-        description="Owner wallet (case-insensitive). MVP auth — to be replaced by SIWE.",
-    ),
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     """Partial update of an existing merchant's off-chain profile.
 
-    Auth (MVP): X-Wallet-Address header must case-insensitively match the
-    merchant's stored owner wallet. No cryptographic proof yet — treat as
-    testnet-only until SIWE signed nonces ship.
+    Auth: `Authorization: Bearer <token>` where the token was minted via
+    the challenge-response flow in /v1/auth/verify. The bearer token
+    resolves to a wallet address server-side; that wallet must own the
+    merchant. Wallet addresses are public on-chain so they cannot be used
+    as an auth secret — only a fresh signature proves ownership.
     """
-    merchant = update_merchant(merchant_id, payload, x_wallet_address)
+    wallet = resolve_token(creds.credentials)
+    if not wallet:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    merchant = update_merchant(merchant_id, payload, wallet)
     return {"message": "Merchant updated", "data": merchant}
 
 

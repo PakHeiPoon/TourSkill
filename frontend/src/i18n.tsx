@@ -243,6 +243,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'sign.signButton': 'Sign & register on 0G Chain',
     'sign.signing.off': 'Saving profile off-chain…',
     'sign.signing.chain': 'Waiting for MetaMask signature…',
+    'sign.signing.bind': 'Authorizing your agent (free signature)…',
     'sign.signing.complete': 'Notifying your agent…',
     'sign.success': 'Signed successfully',
     'sign.successDesc': 'Your merchant is now anchored on-chain and your agent has been notified. You can close this tab.',
@@ -250,6 +251,21 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'sign.viewTx': 'View register tx on chainscan',
     'sign.errorPrefix': 'Signing failed',
     'sign.close': 'Close this tab',
+
+    // ─── Agent install credentials (shown after sign or in Profile) ───
+    'install.title': 'Install to your agent',
+    'install.desc': 'Paste these into your merchant agent so it can manage this wallet\'s listings. The token is a 30-day session credential — if you lose it, just re-sign from this page.',
+    'install.wallet': 'Wallet address',
+    'install.token': 'Session token',
+    'install.copy': 'Copy',
+    'install.copied': 'Copied',
+    'install.reveal': 'Reveal token',
+    'install.hide': 'Hide',
+    'install.regenerate': 'Regenerate token',
+    'install.generate': 'Generate agent token',
+    'install.generating': 'Waiting for wallet signature…',
+    'install.expires': 'Expires {date}',
+    'install.snippet': '.env snippet',
 
     // ─── Common ───
     'common.loading': 'Loading…',
@@ -491,6 +507,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'sign.signButton': '签名并注册到 0G Chain',
     'sign.signing.off': '正在保存资料……',
     'sign.signing.chain': '等待 MetaMask 签名……',
+    'sign.signing.bind': '正在授权你的 agent（免费签名）……',
     'sign.signing.complete': '正在通知你的 agent……',
     'sign.success': '签名成功',
     'sign.successDesc': '你的商家已上链，agent 已收到通知。可以关闭此页面了。',
@@ -498,6 +515,21 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'sign.viewTx': '在 chainscan 查看注册交易',
     'sign.errorPrefix': '签名失败',
     'sign.close': '关闭此页',
+
+    // ─── Agent install credentials (shown after sign or in Profile) ───
+    'install.title': '安装到你的 Agent',
+    'install.desc': '把下面的凭证粘到你的商家 agent 里，它就能代管这个钱包下的商家。Token 是 30 天有效的会话凭证——丢了就在本页重新签名一次就行。',
+    'install.wallet': '钱包地址',
+    'install.token': '会话 Token',
+    'install.copy': '复制',
+    'install.copied': '已复制',
+    'install.reveal': '显示 token',
+    'install.hide': '隐藏',
+    'install.regenerate': '重新生成 token',
+    'install.generate': '生成 agent token',
+    'install.generating': '等待钱包签名……',
+    'install.expires': '到期时间 {date}',
+    'install.snippet': '.env 代码片段',
 
     // ─── Common ───
     'common.loading': '加载中……',

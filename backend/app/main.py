@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routers.auth import router as auth_router
 from app.routers.draft import router as draft_router
 from app.routers.health import router as health_router
 from app.routers.mcp import router as mcp_router
@@ -21,5 +22,6 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(merchant_router, prefix="/v1", tags=["merchant"])
 app.include_router(draft_router, prefix="/v1", tags=["draft"])
+app.include_router(auth_router, prefix="/v1", tags=["auth"])
 app.include_router(mcp_router, prefix="/mcp", tags=["mcp"])
 app.include_router(skills_router, prefix="/skills", tags=["skills"])

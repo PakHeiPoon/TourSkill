@@ -37,6 +37,10 @@ class DraftCompleteRequest(BaseModel):
     merchant_id: str
     wallet_address: str
     tx_hash: Optional[str] = None
+    # Bearer token minted by POST /v1/auth/verify after the owner signed
+    # the binding challenge in MetaMask. The browser attaches it here so
+    # the polling agent can pick it up atomically with the merchant_id.
+    auth_token: Optional[str] = None
 
 
 class DraftView(BaseModel):
@@ -50,3 +54,4 @@ class DraftView(BaseModel):
     merchant_id: Optional[str] = None
     wallet_address: Optional[str] = None
     tx_hash: Optional[str] = None
+    auth_token: Optional[str] = None

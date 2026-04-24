@@ -51,6 +51,7 @@ def _public_view(draft_id: str) -> Dict[str, Any]:
         "merchant_id": d["merchant_id"],
         "wallet_address": d["wallet_address"],
         "tx_hash": d["tx_hash"],
+        "auth_token": d["auth_token"],
     }
 
 
@@ -68,6 +69,7 @@ def create_draft(req: DraftCreateRequest) -> Dict[str, Any]:
             "merchant_id": None,
             "wallet_address": None,
             "tx_hash": None,
+            "auth_token": None,
         }
         return _public_view(draft_id)
 
@@ -93,4 +95,5 @@ def complete_draft(draft_id: str, req: DraftCompleteRequest) -> Dict[str, Any]:
             draft["merchant_id"] = req.merchant_id
             draft["wallet_address"] = req.wallet_address
             draft["tx_hash"] = req.tx_hash
+            draft["auth_token"] = req.auth_token
         return _public_view(draft_id)

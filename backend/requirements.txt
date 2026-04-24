@@ -3,3 +3,7 @@ uvicorn
 pydantic
 python-dotenv
 supabase
+# Challenge-response auth: ecrecover an EIP-191 (personal_sign) signature
+# back to the claimed wallet address. Pinning a lower bound that has
+# encode_defunct + Account.recover_message available.
+eth-account>=0.10

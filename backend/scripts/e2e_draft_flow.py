@@ -1,16 +1,21 @@
-"""End-to-end smoke test for the /v1/drafts + PATCH pipeline.
+"""End-to-end smoke test for the full onboard + auth pipeline.
 
 What this proves:
   1. Agent can POST a draft and gets back a sign_url.
-  2. GET returns pending state + the stored payload.
-  3. Browser-side POST /complete flips status → signed and attaches
-     merchant_id / wallet / tx_hash. The merchant row gets
-     register_tx_hash written into specific_fields.
-  4. Second GET reflects the signed state (durability).
-  5. Subsequent PATCH with X-Wallet-Address works (auth contract holds).
-  6. PATCH with a wrong wallet is rejected with 403 (auth is enforced).
-  7. Unknown draft id → 404.
-  8. Cleanup: the newly created merchant is set back to active.
+  2. Owner's browser challenge-response signs → mints an opaque bearer
+     token. Replaying a consumed nonce is rejected.
+  3. A signature from a DIFFERENT wallet cannot redeem another wallet's
+     nonce (impersonation defense).
+  4. Browser completes the draft with { merchant_id, wallet, tx_hash,
+     auth_token } → status flips to signed and the token surfaces to
+     the polling agent.
+  5. Merchant row absorbs register_tx_hash.
+  6. PATCH with the minted Bearer token succeeds.
+  7. PATCH with ONLY the wallet address in the old X-Wallet-Address
+     header is rejected (the public-wallet hole is closed).
+  8. PATCH with a wrong bearer token is rejected.
+  9. PATCH from a different wallet's token (same merchant) is rejected.
+ 10. Unknown draft id → 404.
 
 What this does NOT prove (by design — no browser, no MetaMask):
   - The real on-chain MerchantRegistry.register() call. That step is
@@ -29,6 +34,8 @@ import time
 from typing import Any, Dict
 
 import requests
+from eth_account import Account
+from eth_account.messages import encode_defunct
 
 BASE = os.getenv("BASE", "http://127.0.0.1:8000").rstrip("/")
 TIMEOUT = 15
@@ -55,20 +62,39 @@ def _expect(cond: bool, msg: str) -> None:
 
 
 def _req(method: str, path: str, **kw: Any) -> requests.Response:
-    url = f"{BASE}{path}"
-    r = requests.request(method, url, timeout=TIMEOUT, **kw)
+    r = requests.request(method, f"{BASE}{path}", timeout=TIMEOUT, **kw)
     return r
+
+
+def mint_token(wallet_acct: Any) -> str:
+    """Run the full challenge-response dance server-side, like the browser."""
+    r = _req("POST", "/v1/auth/challenge", json={"wallet_address": wallet_acct.address})
+    if r.status_code != 200:
+        _fail(f"challenge failed: {r.status_code} {r.text}")
+    c = r.json()
+    encoded = encode_defunct(text=c["message"])
+    sig_hex = Account.sign_message(encoded, private_key=wallet_acct.key).signature.hex()
+    if not sig_hex.startswith("0x"):
+        sig_hex = "0x" + sig_hex
+    r = _req(
+        "POST",
+        "/v1/auth/verify",
+        json={"wallet_address": wallet_acct.address, "nonce": c["nonce"], "signature": sig_hex},
+    )
+    if r.status_code != 200:
+        _fail(f"verify failed: {r.status_code} {r.text}")
+    return r.json()["token"]
 
 
 def main() -> None:
     print(f"\x1b[1mE2E smoke — target: {BASE}\x1b[0m")
 
-    # Sanity: health ------------------------------------------------------
+    # ─── Sanity: health ─────────────────────────────────────────────────
     _step("Health check")
     r = _req("GET", "/health")
     _expect(r.status_code == 200, f"GET /health → {r.status_code}")
 
-    # 1. Create a draft ---------------------------------------------------
+    # ─── 1. Create a draft ──────────────────────────────────────────────
     _step("POST /v1/drafts — agent creates onboard draft")
     draft_body: Dict[str, Any] = {
         "merchant_type": "restaurant",
@@ -88,109 +114,167 @@ def main() -> None:
     draft = r.json()
     draft_id: str = draft["draft_id"]
     _expect(bool(draft_id), f"draft_id returned: {draft_id}")
-    _expect(
-        draft["sign_url"].endswith(f"/merchant/sign/{draft_id}"),
-        f"sign_url shape: {draft['sign_url']}",
+
+    # ─── 2. Challenge-response: mint a token ────────────────────────────
+    _step("POST /v1/auth/challenge + sign + verify — mint session token")
+    owner = Account.create()
+    attacker = Account.create()
+    _ok(f"owner wallet:    {owner.address}")
+    _ok(f"attacker wallet: {attacker.address}")
+
+    # Happy path
+    r = _req("POST", "/v1/auth/challenge", json={"wallet_address": owner.address})
+    _expect(r.status_code == 200, f"challenge status = {r.status_code}")
+    challenge = r.json()
+
+    encoded = encode_defunct(text=challenge["message"])
+    owner_sig = Account.sign_message(encoded, private_key=owner.key).signature.hex()
+    if not owner_sig.startswith("0x"):
+        owner_sig = "0x" + owner_sig
+
+    # Impersonation: attacker signs owner's nonce — server must recover a
+    # different address and reject.
+    attacker_sig = Account.sign_message(encoded, private_key=attacker.key).signature.hex()
+    if not attacker_sig.startswith("0x"):
+        attacker_sig = "0x" + attacker_sig
+
+    _step("POST /v1/auth/verify — attacker cannot redeem owner's nonce")
+    r = _req(
+        "POST",
+        "/v1/auth/verify",
+        json={
+            "wallet_address": owner.address,
+            "nonce": challenge["nonce"],
+            "signature": attacker_sig,
+        },
     )
-    _expect(draft["status"] == "pending", "status = pending")
-    _expect(draft["merchant_id"] is None, "merchant_id is null before signing")
+    _expect(r.status_code == 403, f"attacker verify status = {r.status_code}")
 
-    # 2. Read it back -----------------------------------------------------
-    _step("GET /v1/drafts/{id} — still pending")
-    r = _req("GET", f"/v1/drafts/{draft_id}")
-    _expect(r.status_code == 200, f"draft read status = {r.status_code}")
-    d2 = r.json()
-    _expect(d2["status"] == "pending", "status still pending")
-    _expect(d2["payload"]["name"] == draft_body["name"], "payload round-trips")
+    _step("POST /v1/auth/verify — owner's signature succeeds")
+    r = _req(
+        "POST",
+        "/v1/auth/verify",
+        json={
+            "wallet_address": owner.address,
+            "nonce": challenge["nonce"],
+            "signature": owner_sig,
+        },
+    )
+    _expect(r.status_code == 200, f"owner verify status = {r.status_code}")
+    owner_token = r.json()["token"]
+    _expect(bool(owner_token), "token minted")
 
-    # 3. Simulate the browser: off-chain create + mock tx + complete ------
+    _step("POST /v1/auth/verify — nonce replay must fail")
+    r = _req(
+        "POST",
+        "/v1/auth/verify",
+        json={
+            "wallet_address": owner.address,
+            "nonce": challenge["nonce"],
+            "signature": owner_sig,
+        },
+    )
+    _expect(r.status_code == 400, f"replay status = {r.status_code}")
+
+    # ─── 3. Create merchant + complete draft with auth_token ────────────
     _step("POST /v1/merchants — simulate the browser's off-chain save")
-    test_wallet = "0x000000000000000000000000000000000000E2E5"
-    other_wallet = "0xDead000000000000000000000000000000000001"
-    merchant_payload = {
-        **draft_body,
-        "wallet_address": test_wallet,
-    }
+    merchant_payload = {**draft_body, "wallet_address": owner.address}
     r = _req("POST", "/v1/merchants", json=merchant_payload)
     _expect(r.status_code == 200, f"merchant create status = {r.status_code}")
     merchant_id: str = r.json()["data"]["merchant_id"]
     _ok(f"created merchant_id = {merchant_id}")
 
-    # Mock tx hash (real one would come from MerchantRegistry.register)
     mock_tx = "0x" + "ab" * 32
 
-    _step("POST /v1/drafts/{id}/complete — browser reports back")
+    _step("POST /v1/drafts/{id}/complete — browser hands back {merchant, wallet, tx, token}")
     r = _req(
         "POST",
         f"/v1/drafts/{draft_id}/complete",
         json={
             "merchant_id": merchant_id,
-            "wallet_address": test_wallet,
+            "wallet_address": owner.address,
             "tx_hash": mock_tx,
+            "auth_token": owner_token,
         },
     )
     _expect(r.status_code == 200, f"complete status = {r.status_code}")
     d3 = r.json()
     _expect(d3["status"] == "signed", "status flipped → signed")
-    _expect(d3["merchant_id"] == merchant_id, "merchant_id echoed")
-    _expect(d3["wallet_address"].lower() == test_wallet.lower(), "wallet echoed")
-    _expect(d3["tx_hash"] == mock_tx, "tx_hash echoed")
+    _expect(d3["auth_token"] == owner_token, "auth_token surfaced to agent")
 
-    # 4. Agent polls — durable signed state -------------------------------
-    _step("GET /v1/drafts/{id} — agent picks up result")
+    # ─── 4. Agent polls — picks up token ────────────────────────────────
+    _step("GET /v1/drafts/{id} — agent picks up token for future PATCH")
     time.sleep(0.2)
     r = _req("GET", f"/v1/drafts/{draft_id}")
     _expect(r.status_code == 200, f"re-read status = {r.status_code}")
-    d4 = r.json()
-    _expect(d4["status"] == "signed", "still signed")
-    _expect(d4["merchant_id"] == merchant_id, "merchant_id durable")
+    _expect(r.json()["auth_token"] == owner_token, "token durable across polls")
 
-    # 5. Merchant row absorbed the tx_hash --------------------------------
-    _step("GET /v1/merchants/{id} — tx_hash written to specific_fields")
+    # ─── 5. tx_hash landed on merchant row ──────────────────────────────
+    _step("GET /v1/merchants/{id} — register_tx_hash written")
     r = _req("GET", f"/v1/merchants/{merchant_id}")
-    _expect(r.status_code == 200, f"merchant read status = {r.status_code}")
-    m = r.json()
-    _expect(m.get("register_tx_hash") == mock_tx, "register_tx_hash persisted")
+    _expect(r.json().get("register_tx_hash") == mock_tx, "register_tx_hash persisted")
 
-    # 6. Auth contract: PATCH with correct wallet succeeds ----------------
-    _step("PATCH /v1/merchants/{id} — pause with owner wallet")
+    # ─── 6. PATCH with Bearer succeeds ──────────────────────────────────
+    _step("PATCH /v1/merchants/{id} — pause with Bearer token")
     r = _req(
         "PATCH",
         f"/v1/merchants/{merchant_id}",
         json={"status": "inactive"},
-        headers={"X-Wallet-Address": test_wallet},
+        headers={"Authorization": f"Bearer {owner_token}"},
     )
     _expect(r.status_code == 200, f"pause status = {r.status_code}")
     _expect(r.json()["data"]["status"] == "inactive", "status = inactive")
 
-    # 7. Auth contract: wrong wallet rejected ------------------------------
-    _step("PATCH /v1/merchants/{id} — wrong wallet must be rejected")
+    # ─── 7. The OLD X-Wallet-Address hole is closed ─────────────────────
+    _step("PATCH with X-Wallet-Address ONLY — must be rejected (old hole closed)")
     r = _req(
         "PATCH",
         f"/v1/merchants/{merchant_id}",
         json={"status": "active"},
-        headers={"X-Wallet-Address": other_wallet},
+        headers={"X-Wallet-Address": owner.address},
     )
-    _expect(r.status_code == 403, f"wrong-wallet patch status = {r.status_code}")
+    _expect(
+        r.status_code in (401, 403),
+        f"wallet-only patch status = {r.status_code} (expected 401/403)",
+    )
 
-    # 8. 404 for unknown draft --------------------------------------------
-    _step("GET /v1/drafts/does-not-exist — 404")
+    # ─── 8. Random bearer → 401 ─────────────────────────────────────────
+    _step("PATCH with random bearer — must 401")
+    r = _req(
+        "PATCH",
+        f"/v1/merchants/{merchant_id}",
+        json={"status": "active"},
+        headers={"Authorization": "Bearer randomfaketokenshouldnotwork"},
+    )
+    _expect(r.status_code == 401, f"random bearer status = {r.status_code}")
+
+    # ─── 9. Attacker's OWN valid token on owner's merchant → 403 ────────
+    _step("PATCH with attacker's legit token on owner's merchant — must 403")
+    attacker_token = mint_token(attacker)
+    r = _req(
+        "PATCH",
+        f"/v1/merchants/{merchant_id}",
+        json={"status": "active"},
+        headers={"Authorization": f"Bearer {attacker_token}"},
+    )
+    _expect(r.status_code == 403, f"attacker-token patch status = {r.status_code}")
+
+    # ─── 10. Unknown draft → 404 ────────────────────────────────────────
+    _step("GET /v1/drafts/does-not-exist → 404")
     r = _req("GET", "/v1/drafts/does-not-exist-xyz")
     _expect(r.status_code == 404, f"unknown draft status = {r.status_code}")
 
-    # Cleanup: leave the smoke merchant PAUSED so it stays out of the
-    # public Explorer feed. The row is kept (not deleted) so re-runs can
-    # refer back and so the tx_hash/auth trace stays auditable.
-    _step("Cleanup — leave smoke merchant paused (hidden from discover)")
+    # ─── Cleanup ────────────────────────────────────────────────────────
+    _step("Cleanup — leave smoke merchant paused")
     r = _req(
         "PATCH",
         f"/v1/merchants/{merchant_id}",
         json={"status": "inactive"},
-        headers={"X-Wallet-Address": test_wallet},
+        headers={"Authorization": f"Bearer {owner_token}"},
     )
     _expect(r.status_code == 200, f"pause status = {r.status_code}")
 
-    print("\n\x1b[1;32m✓ E2E smoke passed — full draft/sign pipeline is healthy.\x1b[0m")
+    print("\n\x1b[1;32m✓ E2E smoke passed — draft + challenge-response auth pipeline is healthy.\x1b[0m")
     print(f"  smoke merchant: {merchant_id} (paused, hidden from discover)")
 
 

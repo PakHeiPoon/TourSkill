@@ -3,12 +3,14 @@ import { Link, useParams } from 'react-router-dom'
 import { BrowserProvider, Contract } from 'ethers'
 import { AlertCircle, CheckCircle2, Clock, ExternalLink, Loader2, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
 
+import InstallCredentialsCard from '../components/InstallCredentialsCard'
 import {
   MERCHANT_REGISTRY_ABI,
   MERCHANT_REGISTRY_ADDRESS,
   ZERO_G_CHAIN,
 } from '../contracts/MerchantRegistry'
 import { useT } from '../i18n'
+import { mintToken } from '../lib/auth'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
@@ -41,9 +43,10 @@ type DraftView = {
   merchant_id: string | null
   wallet_address: string | null
   tx_hash: string | null
+  auth_token: string | null
 }
 
-type Phase = 'idle' | 'off-chain' | 'chain' | 'complete' | 'done' | 'error'
+type Phase = 'idle' | 'off-chain' | 'chain' | 'bind' | 'complete' | 'done' | 'error'
 
 function shortAddr(addr: string): string {
   if (!addr || addr.length < 10) return addr
@@ -61,7 +64,12 @@ export default function MerchantSign() {
   const [wallet, setWallet] = useState<string>('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [signError, setSignError] = useState<string>('')
-  const [result, setResult] = useState<{ merchantId: string; txHash: string | null } | null>(null)
+  const [result, setResult] = useState<{
+    merchantId: string
+    txHash: string | null
+    authToken: string | null
+    tokenExpiresAt: string | null
+  } | null>(null)
 
   // ─── Load the draft ───
   useEffect(() => {
@@ -77,9 +85,17 @@ export default function MerchantSign() {
           const data = (await res.json()) as DraftView
           if (!cancelled) {
             setDraft(data)
-            // If already signed (refresh after success), remember result
+            // If already signed (refresh after success), restore result.
+            // Note: auth_token is only visible to the first browser that
+            // completed signing — a refresh in another tab sees null here,
+            // which is correct (tokens are secrets, not shareable state).
             if (data.status === 'signed' && data.merchant_id) {
-              setResult({ merchantId: data.merchant_id, txHash: data.tx_hash })
+              setResult({
+                merchantId: data.merchant_id,
+                txHash: data.tx_hash,
+                authToken: data.auth_token,
+                tokenExpiresAt: null,
+              })
               setPhase('done')
             }
           }
@@ -187,7 +203,15 @@ export default function MerchantSign() {
       const receipt = await tx.wait()
       const txHash: string = receipt.hash
 
-      // Step 3: notify backend so the agent can pick up the result
+      // Step 3: bind — free personal_sign that mints an opaque bearer
+      // token. This is what lets the agent PATCH without the owner's
+      // private key. Without this step, "signing once" would leave a
+      // pub-key-only anchor on-chain and no secure auth channel.
+      setPhase('bind')
+      const { token: authToken, expiresAt: tokenExpiresAt } = await mintToken(wallet)
+
+      // Step 4: notify backend so the agent can pick up the result
+      // (including the freshly-minted auth_token).
       setPhase('complete')
       await fetch(`${API_BASE}/v1/drafts/${encodeURIComponent(draftId)}/complete`, {
         method: 'POST',
@@ -196,10 +220,11 @@ export default function MerchantSign() {
           merchant_id: merchantId,
           wallet_address: wallet,
           tx_hash: txHash,
+          auth_token: authToken,
         }),
       })
 
-      setResult({ merchantId, txHash })
+      setResult({ merchantId, txHash, authToken, tokenExpiresAt })
       setPhase('done')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Registration failed'
@@ -208,7 +233,7 @@ export default function MerchantSign() {
     }
   }
 
-  const busy = phase === 'off-chain' || phase === 'chain' || phase === 'complete'
+  const busy = phase === 'off-chain' || phase === 'chain' || phase === 'bind' || phase === 'complete'
 
   const expiresInMinutes = useMemo(() => {
     if (!draft) return null
@@ -242,7 +267,7 @@ export default function MerchantSign() {
 
   if (phase === 'done' && result) {
     return (
-      <div className="max-w-2xl mx-auto py-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="max-w-2xl mx-auto py-12 animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-6">
         <div className="rounded-2xl border border-border bg-white shadow-xl shadow-text/5 p-10 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 mb-6">
             <CheckCircle2 className="w-8 h-8" />
@@ -271,6 +296,16 @@ export default function MerchantSign() {
             )}
           </div>
         </div>
+
+        {/* Show token only to the browser that just minted it. On refresh
+            (or in another tab) auth_token is null — a fresh sign is required. */}
+        {wallet && result.authToken && (
+          <InstallCredentialsCard
+            wallet={wallet}
+            initialToken={result.authToken}
+            initialExpiresAt={result.tokenExpiresAt ?? undefined}
+          />
+        )}
       </div>
     )
   }
@@ -389,6 +424,7 @@ export default function MerchantSign() {
                     <span>
                       {phase === 'off-chain' && t('sign.signing.off')}
                       {phase === 'chain' && t('sign.signing.chain')}
+                      {phase === 'bind' && t('sign.signing.bind')}
                       {phase === 'complete' && t('sign.signing.complete')}
                     </span>
                   </>

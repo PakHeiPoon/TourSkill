@@ -15,6 +15,8 @@ import {
   CircleDot,
 } from 'lucide-react'
 import { useT } from '../i18n'
+import { ensureToken } from '../lib/auth'
+import InstallCredentialsCard from '../components/InstallCredentialsCard'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
@@ -77,11 +79,14 @@ export default function ProfilePage(): React.JSX.Element {
     setToggling(prev => ({ ...prev, [m.merchant_id]: true }))
     const nextStatus = m.status === 'inactive' ? 'active' : 'inactive'
     try {
+      // ensureToken either returns a cached session token or prompts
+      // MetaMask once for a personal_sign and mints a fresh one.
+      const token = await ensureToken(walletAddress)
       const res = await fetch(`${API_BASE}/v1/merchants/${encodeURIComponent(m.merchant_id)}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'X-Wallet-Address': walletAddress,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status: nextStatus }),
       })
@@ -180,6 +185,11 @@ export default function ProfilePage(): React.JSX.Element {
           </div>
         </div>
       </section>
+
+      {/* Install to your agent */}
+      <div className="mb-6">
+        <InstallCredentialsCard wallet={walletAddress} />
+      </div>
 
       {/* My Merchants */}
       <section className="bg-white rounded-3xl border border-border shadow-sm p-8 mb-6">

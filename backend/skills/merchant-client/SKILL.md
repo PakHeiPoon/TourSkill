@@ -87,10 +87,14 @@ most owner requests map to exactly one of these.
 
 ### Design principle — "Sign once, govern forever"
 
-The merchant signs a wallet transaction **only once**, at initial registration.
-That tx anchors identity on-chain. Everything after (menu tweaks, closing for a
-day, adding a new skill) is plain API with wallet-bound auth headers. No gas,
-no signing friction, no crypto fatigue.
+The merchant signs exactly **two** things at onboard — once, all at once:
+1. An on-chain tx (`MerchantRegistry.register`) that anchors identity.
+2. A free EIP-191 message that mints a 30-day bearer token for the agent.
+
+Everything after (menu tweaks, closing for a day, adding a new skill) is
+plain API with `Authorization: Bearer ${MERCHANT_TOKEN}`. No gas, no new
+signatures, no crypto fatigue. When the token expires, the owner signs
+one more free message in the UI — that's it.
 
 ---
 
@@ -159,7 +163,8 @@ Response:
   "payload":     { ...the draft you sent... },
   "merchant_id": null,
   "wallet_address": null,
-  "tx_hash":     null
+  "tx_hash":     null,
+  "auth_token":  null
 }
 ```
 
@@ -190,44 +195,61 @@ When `status` flips to `"signed"`, the response includes:
   "draft_id":      "hZQl1fU…",
   "status":        "signed",
   "merchant_id":   "merchant:xxxxxxxxxxxx",   // ← persist as MERCHANT_ID
-  "wallet_address":"0xABC…",                  // ← persist as OWNER_WALLET
-  "tx_hash":       "0xdeadbeef…"              // ← on-chain register proof
+  "wallet_address":"0xABC…",                  // ← persist for display/logs
+  "tx_hash":       "0xdeadbeef…",             // ← on-chain register proof
+  "auth_token":    "V7k8r…"                   // ← persist as MERCHANT_TOKEN
 }
 ```
 
 Stop polling, confirm to the owner ("Signed ✅ — tx `0xdead…beef`"), and
-persist both `merchant_id` and `wallet_address` locally.
+**immediately persist `auth_token` somewhere secret** — the backend only
+hands it out in this one draft response. A refresh of the sign page in a
+different tab will return `auth_token: null` (by design — tokens are
+secrets, not shareable state).
 
-**What's happening under the hood**: the sign page creates the merchant
-row off-chain, prompts MetaMask for `MerchantRegistry.register(...)`,
-then reports the tx hash back to the draft. You don't do any of that —
-you just wait for the `status` flip.
+**What's happening under the hood**: the sign page does three signatures:
+1. MetaMask signs `MerchantRegistry.register(...)` — the on-chain anchor (costs gas).
+2. MetaMask signs a free EIP-191 challenge (`personal_sign`). The backend
+   recovers the signer, verifies it matches the claimed wallet, and mints
+   an opaque 30-day bearer token.
+3. The browser hands `{ merchant_id, wallet, tx_hash, auth_token }` back
+   to the draft, where you pick it up.
+
+You don't run any of that — you just wait for the `status` flip.
 
 ### 2.5 Persist the credentials for future ops
 
 After onboard, set:
 ```
 MERCHANT_ID=merchant:xxxxxxxxxxxx
-MERCHANT_WALLET_ADDRESS=0xABC…
+MERCHANT_WALLET_ADDRESS=0xABC…             # for display and discover() filtering
+MERCHANT_TOKEN=V7k8r…                       # ← the bearer token, keep secret
 ```
 
-For every subsequent verb (Update, Pause, Resume), send the owner's
-wallet as an auth header:
+For every subsequent verb (Update, Pause, Resume), authenticate with the
+bearer token:
 
 ```
-X-Wallet-Address: ${MERCHANT_WALLET_ADDRESS}
+Authorization: Bearer ${MERCHANT_TOKEN}
 ```
 
-This is the "Sign Once, Govern Forever" contract: the owner signed
-once on-chain; the backend remembers the wallet as the legitimate
-controller, and you speak on its behalf with the header.
+**Do NOT** use `X-Wallet-Address` as auth — that was the old MVP and is
+now fully rejected (401). Wallet addresses are public on-chain, so they
+were never a real secret.
 
-> **Auth note (MVP, testnet only)**: the header is currently a plain
-> wallet address, not a cryptographic proof. Anyone who learns the
-> wallet can PATCH. Mainnet will require a SIWE-signed nonce.
+This is the "Sign Once, Govern Forever" contract:
+- The owner signed once on-chain → their listing is anchored.
+- The owner signed once off-chain → the backend knows they control the key.
+- You, the agent, hold the token → you act on the wallet's behalf until
+  the token expires (30 days) or the owner regenerates it in the UI.
 
-If the owner has multiple listings, list them first (see §3) and ask
-which one to operate on.
+**If the token expires or the owner regenerates it**: every PATCH will
+start returning 401. Tell the owner: _"Your agent token expired. Open
+`https://tourskill.paking.xyz/profile` and click 'Regenerate token',
+then paste me the new value."_ Then update `MERCHANT_TOKEN` in your env.
+
+If the owner has multiple listings, the same token covers all merchants
+owned by the same wallet — you don't need one token per merchant.
 
 ---
 
@@ -273,12 +295,13 @@ Returns the full profile + on-chain fields (`wallet_address`, `profile_hash`,
 
 ## 4. Update — Change profile fields
 
-No signing. Authenticates via wallet header.
+No new signing per call. Authenticates with the bearer token you got
+during onboard (§2.4).
 
 ```http
 PATCH ${TOURSKILL_API_BASE}/v1/merchants/${MERCHANT_ID}
 Content-Type: application/json
-X-Wallet-Address: ${MERCHANT_WALLET_ADDRESS}
+Authorization: Bearer ${MERCHANT_TOKEN}
 
 {
   "opening_hours": "09:00-23:00",
@@ -288,7 +311,8 @@ X-Wallet-Address: ${MERCHANT_WALLET_ADDRESS}
 ```
 
 Only fields present in the body are updated (partial patch). Backend rejects
-with `403` if `X-Wallet-Address` doesn't match the merchant's owner wallet.
+with `401` if the token is missing/invalid/expired, and `403` if the token's
+bound wallet doesn't own this merchant.
 
 ### Allowed fields
 
@@ -330,7 +354,7 @@ When status is `'inactive'`:
 
 ```http
 PATCH ${TOURSKILL_API_BASE}/v1/merchants/${MERCHANT_ID}
-X-Wallet-Address: ${MERCHANT_WALLET_ADDRESS}
+Authorization: Bearer ${MERCHANT_TOKEN}
 Content-Type: application/json
 
 { "status": "inactive" }
@@ -344,7 +368,7 @@ it back."*
 
 ```http
 PATCH ${TOURSKILL_API_BASE}/v1/merchants/${MERCHANT_ID}
-X-Wallet-Address: ${MERCHANT_WALLET_ADDRESS}
+Authorization: Bearer ${MERCHANT_TOKEN}
 
 { "status": "active" }
 ```
@@ -374,10 +398,12 @@ the chainscan event log for the registry contract."* Link them to:
    direct them to the web console for MetaMask signing. No exceptions.
 3. **Never serve user-side verbs** (discover / invoke merchant skill). If the
    human operator asks for customer stuff, point them at `user-client/SKILL.md`.
-4. **Wallet-header auth is MVP-only.** Until SIWE ships, updates are protected
-   only by matching `X-Wallet-Address` to the owner wallet. This is acceptable
-   on testnet but **must be upgraded to signed nonces before any mainnet
-   migration** — treat it as a roadmap dependency.
+4. **Bearer token is the only auth.** The legacy `X-Wallet-Address`
+   header is rejected with 401 — wallet addresses are public on-chain
+   and cannot be used as a secret. Mint the token via the challenge-
+   response flow (see §2.3) and keep it in `MERCHANT_TOKEN`. The token
+   is a 30-day opaque credential; rotate it by having the owner click
+   "Regenerate token" on `/profile`.
 5. **Always show the chainscan URL** for the register tx when the owner asks
    about provenance. That's the merchant's permanent on-chain receipt.
 6. **Pause is not delete.** Explain the difference when the owner asks to
