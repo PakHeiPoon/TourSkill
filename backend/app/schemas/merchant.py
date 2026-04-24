@@ -10,6 +10,9 @@ class DiscoverRequest(BaseModel):
     type: Optional[MerchantType] = None
     keyword: Optional[str] = None
     wallet: Optional[str] = None  # 0x... — filter to merchants owned by this wallet
+    # By default we only return active merchants. Owners who want to see
+    # their paused listings (to resume them) set this to True.
+    include_inactive: bool = False
     limit: int = 30
     offset: int = 0
 

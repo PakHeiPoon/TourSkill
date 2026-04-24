@@ -14,6 +14,8 @@ import {
   Loader2,
   Copy,
   Check,
+  Pause,
+  CircleDot,
 } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
@@ -44,6 +46,7 @@ interface Merchant {
   wallet_address?: string
   profile_hash?: string
   register_tx_hash?: string
+  status?: 'active' | 'inactive'
 }
 
 function CopyableHex({ value, label }: { value: string; label: string }) {
@@ -136,6 +139,18 @@ export default function MerchantDetail(): React.JSX.Element {
             <ShieldCheck className="w-3 h-3" strokeWidth={2.5} />
             Verified on 0G Chain
           </span>
+          {/* Business status badge */}
+          {merchant.status === 'inactive' ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-2 border border-border-strong rounded-md text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+              <Pause className="w-3 h-3" strokeWidth={3} />
+              Paused
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-md text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">
+              <CircleDot className="w-3 h-3" strokeWidth={3} />
+              Open
+            </span>
+          )}
           {merchant.price_level !== undefined && (
             <span className="px-2.5 py-1 bg-surface text-text-muted text-[10px] font-bold rounded-md uppercase tracking-wider border border-border">
               {'¥'.repeat(merchant.price_level)}<span className="opacity-30">{'¥'.repeat(5 - merchant.price_level)}</span>

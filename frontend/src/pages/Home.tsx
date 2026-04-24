@@ -14,19 +14,26 @@ import AgentLoopDemo from '../components/AgentLoopDemo'
 import Roadmap from '../components/Roadmap'
 import { useT } from '../i18n'
 
-const INSTALL_PROMPT = 'Install the TourSkill skill from https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
-const SKILL_URL = 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
+const SKILL_URLS = {
+  personal: 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md',
+  merchant: 'https://api.tourskill.paking.xyz/skills/merchant-client/SKILL.md',
+} as const
 
+type AgentKind = keyof typeof SKILL_URLS
 type Audience = 'human' | 'agent' | null
 
 export default function Home(): React.JSX.Element {
   const { t } = useT()
   const [copied, setCopied] = useState<boolean>(false)
   const [audience, setAudience] = useState<Audience>(null)
+  const [agentKind, setAgentKind] = useState<AgentKind>('personal')
+
+  const skillUrl = SKILL_URLS[agentKind]
+  const installPrompt = `Install the TourSkill skill from ${skillUrl}`
 
   const copyInstall = async (): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(INSTALL_PROMPT)
+      await navigator.clipboard.writeText(installPrompt)
       setCopied(true)
       setAudience('agent')
       window.setTimeout(() => setCopied(false), 2000)
@@ -94,10 +101,27 @@ export default function Home(): React.JSX.Element {
             : 'border-border'
         }`}
       >
+        {/* Segmented tab: Personal Agent / Merchant Agent */}
+        <div className="inline-flex items-center p-1 mb-4 bg-bg rounded-lg border border-border">
+          {(['personal', 'merchant'] as const).map(k => (
+            <button
+              key={k}
+              onClick={() => setAgentKind(k)}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                agentKind === k
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-text-muted hover:text-text'
+              }`}
+            >
+              {t(`home.install.tab.${k}`)}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <h3 className="flex items-center gap-2 text-text font-semibold">
             <Bot className="w-4 h-4 text-primary" />
-            <span>{t('home.install.title')}</span>
+            <span>{t(`home.install.title.${agentKind}`)}</span>
           </h3>
           <button
             onClick={copyInstall}
@@ -121,30 +145,30 @@ export default function Home(): React.JSX.Element {
         <pre className="bg-text rounded-lg p-4 text-sm font-mono leading-relaxed overflow-x-auto">
           <code className="text-slate-300">Install the TourSkill skill from{'\n'}</code>
           <a
-            href={SKILL_URL}
+            href={skillUrl}
             target="_blank"
             rel="noreferrer"
             className="text-primary-soft hover:text-white break-all underline-offset-4 hover:underline"
           >
-            {SKILL_URL}
+            {skillUrl}
           </a>
         </pre>
 
         <ol className="mt-4 space-y-3 text-sm text-text-muted">
           <li className="flex gap-3">
             <span className="text-accent font-bold min-w-[1.25rem]">1.</span>
-            <span>{t('home.install.step1')}</span>
+            <span>{t(`home.install.${agentKind}.step1`)}</span>
           </li>
           <li className="flex gap-3">
             <span className="text-accent font-bold min-w-[1.25rem]">2.</span>
-            <span>{t('home.install.step2')}</span>
+            <span>{t(`home.install.${agentKind}.step2`)}</span>
           </li>
           <li className="flex gap-3">
             <span className="text-accent font-bold min-w-[1.25rem]">3.</span>
             <span>
-              {t('home.install.step3.before')}
-              <em className="text-text not-italic font-medium">{t('home.install.step3.example')}</em>
-              {t('home.install.step3.after')}
+              {t(`home.install.${agentKind}.step3.before`)}
+              <em className="text-text not-italic font-medium">{t(`home.install.${agentKind}.step3.example`)}</em>
+              {t(`home.install.${agentKind}.step3.after`)}
             </span>
           </li>
         </ol>

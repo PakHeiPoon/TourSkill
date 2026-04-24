@@ -42,6 +42,8 @@ def normalize_merchant(row: Dict[str, Any]) -> Dict[str, Any]:
         # Backfilled by scripts/backfill_tx_hash.py — surface the on-chain
         # MerchantRegistered tx so clients can deep-link to the explorer.
         "register_tx_hash": specific.get("register_tx_hash"),
+        # active | inactive — owners pause/resume via PATCH /merchants/{id}.
+        "status": row.get("status") or "active",
         "created_at": row.get("created_at"),
     }
 
@@ -169,9 +171,12 @@ def discover_merchants(req: DiscoverRequest) -> Dict[str, Any]:
     query = (
         client.table("merchants")
         .select("*")
-        .eq("status", "active")
         .range(req.offset, req.offset + req.limit - 1)
     )
+    # Default: hide paused merchants from consumers. Owners pass
+    # include_inactive=True to see their own paused listings (for resume UX).
+    if not req.include_inactive:
+        query = query.eq("status", "active")
     if req.city:
         query = query.eq("city", req.city.lower())
     if req.type:

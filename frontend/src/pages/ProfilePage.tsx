@@ -11,7 +11,10 @@ import {
   ShieldCheck,
   Loader2,
   PlusCircle,
+  Pause,
+  CircleDot,
 } from 'lucide-react'
+import { useT } from '../i18n'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
@@ -28,6 +31,7 @@ interface Merchant {
   name: { en: string; zh: string }
   location: { city: string; country: string; address: string }
   skills: string[]
+  status?: 'active' | 'inactive'
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -58,6 +62,7 @@ function typeBadge(type: string): string {
 }
 
 export default function ProfilePage(): React.JSX.Element {
+  const { t, lang } = useT()
   const [walletAddress, setWalletAddress] = useState<string>('')
   const [merchants, setMerchants] = useState<Merchant[]>([])
   const [loading, setLoading] = useState<boolean>(false)
@@ -81,7 +86,8 @@ export default function ProfilePage(): React.JSX.Element {
     fetch(`${API_BASE}/v1/discover`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet: walletAddress, limit: 100 }),
+      // include_inactive: true → owner sees their paused listings too
+      body: JSON.stringify({ wallet: walletAddress, limit: 100, include_inactive: true }),
     })
       .then(r => r.json())
       .then(d => setMerchants((d.data ?? []) as Merchant[]))
@@ -192,26 +198,47 @@ export default function ProfilePage(): React.JSX.Element {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {merchants.map(m => (
-              <Link
-                key={m.merchant_id}
-                to={`/merchant/${encodeURIComponent(m.merchant_id)}`}
-                className="group flex items-start gap-3 p-4 bg-surface rounded-xl border border-border hover:border-primary/40 hover:bg-white transition-all"
-              >
-                <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider border shrink-0 ${typeBadge(m.type)}`}>
-                  {m.type}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-text truncate group-hover:text-primary transition-colors">
-                    {m.name.en}
+            {merchants.map(m => {
+              const isPaused = m.status === 'inactive'
+              return (
+                <Link
+                  key={m.merchant_id}
+                  to={`/merchant/${encodeURIComponent(m.merchant_id)}`}
+                  className={`group flex items-start gap-3 p-4 rounded-xl border transition-all ${
+                    isPaused
+                      ? 'bg-surface-2/60 border-dashed border-border-strong hover:border-text-muted opacity-75 hover:opacity-100'
+                      : 'bg-surface border-border hover:border-primary/40 hover:bg-white'
+                  }`}
+                >
+                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider border shrink-0 ${typeBadge(m.type)}`}>
+                    {m.type}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className={`text-sm font-semibold truncate transition-colors ${
+                        isPaused ? 'text-text-muted' : 'text-text group-hover:text-primary'
+                      }`}>
+                        {m.name?.[lang as 'en' | 'zh'] || m.name.en}
+                      </div>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold border shrink-0 ${
+                        isPaused
+                          ? 'bg-surface-2 text-text-muted border-border-strong'
+                          : 'bg-primary-soft text-primary border-primary/30'
+                      }`}>
+                        {isPaused
+                          ? <><Pause className="w-2.5 h-2.5" strokeWidth={3} /> {t('status.inactive')}</>
+                          : <><CircleDot className="w-2.5 h-2.5" strokeWidth={3} /> {t('status.active')}</>
+                        }
+                      </span>
+                    </div>
+                    <div className="text-xs text-text-muted truncate mt-0.5">
+                      {m.location.city.charAt(0).toUpperCase() + m.location.city.slice(1)} · {m.skills.length} skills
+                    </div>
                   </div>
-                  <div className="text-xs text-text-muted truncate">
-                    {m.location.city.charAt(0).toUpperCase() + m.location.city.slice(1)} · {m.skills.length} skills
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5" />
-              </Link>
-            ))}
+                  <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5" />
+                </Link>
+              )
+            })}
           </div>
         )}
       </section>

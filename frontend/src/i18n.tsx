@@ -39,14 +39,24 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'home.cta.noAgent.link': 'Try the web demo',
 
     // ─── Home: install card ───
-    'home.install.title': 'Send your AI agent to TourSkill',
+    'home.install.tab.personal': 'Personal Agent',
+    'home.install.tab.merchant': 'Merchant Agent',
+    'home.install.title.personal': 'Send your AI agent to TourSkill',
+    'home.install.title.merchant': 'Bring your merchant agent to TourSkill',
     'home.install.copy': 'Copy',
     'home.install.copied': 'Copied',
-    'home.install.step1': 'Paste this to your personal agent (Claude Code, Cursor, or any AI that can load skills)',
-    'home.install.step2': 'The agent fetches the SKILL.md — no auth needed, no local backend to run',
-    'home.install.step3.before': 'Ask it ',
-    'home.install.step3.example': '"find me dinner in Hangzhou tomorrow"',
-    'home.install.step3.after': ' — watch A2A commerce happen',
+    // Personal agent flow
+    'home.install.personal.step1': 'Paste this to your personal agent (Claude Code, Cursor, or any AI that can load skills)',
+    'home.install.personal.step2': 'The agent fetches the SKILL.md — no auth needed, no local backend to run',
+    'home.install.personal.step3.before': 'Ask it ',
+    'home.install.personal.step3.example': '"find me dinner in Hangzhou tomorrow"',
+    'home.install.personal.step3.after': ' — watch A2A commerce happen',
+    // Merchant agent flow
+    'home.install.merchant.step1': 'Paste this to your business owner\'s AI agent — the one that knows your shop',
+    'home.install.merchant.step2': 'The agent drafts your profile, you confirm, then sign once via MetaMask to anchor on-chain',
+    'home.install.merchant.step3.before': 'Later, just say ',
+    'home.install.merchant.step3.example': '"update my opening hours"',
+    'home.install.merchant.step3.after': ' — daily edits never require signing',
 
     // ─── Home: three pillars ───
     'home.pillar1.title': 'On-chain Identity',
@@ -84,6 +94,10 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'explorer.emptyTitle': 'No Merchants Found',
     'explorer.emptyBody': 'There are no registered merchants in the selected city yet.',
 
+    // ─── Status badges ───
+    'status.active': 'Open for business',
+    'status.inactive': 'Paused',
+
     // ─── Common ───
     'common.loading': 'Loading…',
   },
@@ -120,14 +134,24 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'home.cta.noAgent.link': '试用网页版演示',
 
     // ─── Home: install card ───
-    'home.install.title': '把你的 AI agent 接入 TourSkill',
+    'home.install.tab.personal': '个人 Agent',
+    'home.install.tab.merchant': '商家 Agent',
+    'home.install.title.personal': '把你的 AI agent 接入 TourSkill',
+    'home.install.title.merchant': '让你的商家 agent 接入 TourSkill',
     'home.install.copy': '复制',
     'home.install.copied': '已复制',
-    'home.install.step1': '把这句话粘贴给你的个人 agent（Claude Code / Cursor 或任何支持 skill 加载的 AI）',
-    'home.install.step2': 'Agent 会自动抓取 SKILL.md——无需鉴权，无需本地后端',
-    'home.install.step3.before': '然后跟它说 ',
-    'home.install.step3.example': '"帮我找杭州明天的晚餐"',
-    'home.install.step3.after': '——亲眼见证 A2A 商业闭环',
+    // Personal
+    'home.install.personal.step1': '把这句话粘贴给你的个人 agent（Claude Code / Cursor 或任何支持 skill 加载的 AI）',
+    'home.install.personal.step2': 'Agent 会自动抓取 SKILL.md——无需鉴权，无需本地后端',
+    'home.install.personal.step3.before': '然后跟它说 ',
+    'home.install.personal.step3.example': '"帮我找杭州明天的晚餐"',
+    'home.install.personal.step3.after': '——亲眼见证 A2A 商业闭环',
+    // Merchant
+    'home.install.merchant.step1': '把这句话粘贴给你的商家 agent——那个了解你店铺经营情况的 AI',
+    'home.install.merchant.step2': 'Agent 起草你的 profile，你确认后通过 MetaMask 一次性签名上链',
+    'home.install.merchant.step3.before': '之后随时跟它说 ',
+    'home.install.merchant.step3.example': '"更新一下营业时间"',
+    'home.install.merchant.step3.after': '——日常修改完全免签',
 
     // ─── Home: three pillars ───
     'home.pillar1.title': '链上身份',
@@ -164,6 +188,10 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'explorer.testSkillApi': '测试 Skill API',
     'explorer.emptyTitle': '未找到商家',
     'explorer.emptyBody': '当前筛选条件下暂无已注册商家。',
+
+    // ─── Status badges ───
+    'status.active': '正常营业',
+    'status.inactive': '已暂停',
 
     // ─── Common ───
     'common.loading': '加载中……',
