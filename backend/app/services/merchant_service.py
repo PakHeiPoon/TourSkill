@@ -10,6 +10,7 @@ from app.services.hash_service import compute_profile_hash
 
 def normalize_merchant(row: Dict[str, Any]) -> Dict[str, Any]:
     merchant_id = row["merchant_id"]
+    specific = row.get("specific_fields") or {}
     return {
         "merchant_id": merchant_id,
         "did": row.get("did", f"did:tourskill:{merchant_id}"),
@@ -33,11 +34,14 @@ def normalize_merchant(row: Dict[str, Any]) -> Dict[str, Any]:
         "tags": row.get("tags") or [],
         "languages_supported": row.get("languages_supported") or [],
         "skills": row.get("supported_skills") or [],
-        "specific_fields": row.get("specific_fields") or {},
+        "specific_fields": specific,
         "wallet_address": row.get("wallet_address"),
         "profile_hash": row.get("profile_hash"),
         "profile_uri": row.get("profile_uri"),
         "skill_endpoint": row.get("skill_endpoint") or f"/v1/merchants/{merchant_id}",
+        # Backfilled by scripts/backfill_tx_hash.py — surface the on-chain
+        # MerchantRegistered tx so clients can deep-link to the explorer.
+        "register_tx_hash": specific.get("register_tx_hash"),
         "created_at": row.get("created_at"),
     }
 
@@ -122,6 +126,10 @@ def discover_merchants(req: DiscoverRequest) -> Dict[str, Any]:
     if req.keyword:
         kw = req.keyword.strip().replace("%", "")
         query = query.or_(f"name_en.ilike.%{kw}%,name_zh.ilike.%{kw}%")
+    if req.wallet:
+        # Wallet matching is case-insensitive (Ethereum addresses are EIP-55
+        # mixed-case but should compare as hex-equal).
+        query = query.ilike("wallet_address", req.wallet)
 
     result = query.order("created_at", desc=True).execute()
     merchants = [normalize_merchant(row) for row in result.data]

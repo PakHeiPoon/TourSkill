@@ -154,7 +154,7 @@ export function use0gCompute() {
     step: null,
   })
 
-  const brokerRef = useRef<BrokerType>()
+  const brokerRef = useRef<BrokerType | null>(null)
   const providerAddrRef = useRef<string>('')
   const endpointRef = useRef<string>('')
   const modelRef = useRef<string>('')
@@ -400,8 +400,11 @@ export function use0gCompute() {
       const data = await response.json()
 
       // CRITICAL: processResponse for fee settlement
-      let chatID = response.headers.get('ZG-Res-Key') || response.headers.get('zg-res-key')
-      if (!chatID) chatID = data.id
+      const chatID: string | undefined =
+        response.headers.get('ZG-Res-Key') ||
+        response.headers.get('zg-res-key') ||
+        data.id ||
+        undefined
       await brokerRef.current.inference.processResponse(
         providerAddrRef.current,
         chatID,

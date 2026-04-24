@@ -1,12 +1,48 @@
 @import "tailwindcss";
 
+/* ─── TourSkill "Horizon White" palette ────────────────────────────────
+   White minimal canvas + deep teal primary (travel + trust + 0G-mint family)
+   + amber accent for warmth. Designed for 7:1+ contrast on white per the
+   minimal-direct landing pattern.
+
+   Tokens feed Tailwind v4 utilities: bg-bg, text-text, border-border,
+   bg-primary, text-accent, etc.
+─────────────────────────────────────────────────────────────────────── */
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-zinc-50: #fafafa;
-  --color-zinc-900: #18181b;
+  --color-bg: #FFFFFF;              /* page background — clean white */
+  --color-surface: #F8FAFC;         /* cards, panels — pale slate */
+  --color-surface-2: #F1F5F9;       /* hover / elevated surfaces */
+  --color-primary: #0F766E;         /* deep teal — CTAs, links */
+  --color-primary-hover: #115E59;
+  --color-primary-soft: #CCFBF1;    /* mint tint for soft backgrounds */
+  --color-accent: #B45309;          /* amber — step numbers, highlights */
+  --color-accent-hover: #92400E;
+  --color-accent-soft: #FEF3C7;     /* amber tint */
+  --color-text: #0F172A;            /* near-black slate */
+  --color-text-muted: #64748B;      /* secondary text */
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
 }
 
 body {
-  @apply bg-zinc-50 text-zinc-900 antialiased;
+  @apply bg-bg text-text antialiased;
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
+}
+
+/* Subtle ambient — two very pale gradients fixed to viewport. Adds depth
+   without dominating; barely visible but stops the page feeling sterile. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    radial-gradient(ellipse 800px 400px at 10% -10%, rgba(15, 118, 110, 0.05), transparent 65%),
+    radial-gradient(ellipse 800px 400px at 90% 110%, rgba(180, 83, 9, 0.04), transparent 65%);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  color: var(--color-text);
 }

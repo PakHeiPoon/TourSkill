@@ -9,6 +9,7 @@ class DiscoverRequest(BaseModel):
     city: Optional[str] = None
     type: Optional[MerchantType] = None
     keyword: Optional[str] = None
+    wallet: Optional[str] = None  # 0x... — filter to merchants owned by this wallet
     limit: int = 30
     offset: int = 0
 

@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapPin, Info, TerminalSquare, ExternalLink, Code2, Globe, X, Play, Loader2, ChevronDown } from 'lucide-react'
+import OnChainBadge from '../components/OnChainBadge'
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend-lilac-xi-18.vercel.app'
 
 const SKILL_PARAMS: Record<string, { label: string; fields: { name: string; type: string; placeholder: string; required?: boolean }[] }> = {
   check_availability: { label: 'Check Availability', fields: [
@@ -84,7 +88,7 @@ function SkillTestModal({ merchant, onClose }: SkillTestModalProps) {
         const field = skillMeta?.fields.find(f => f.name === k)
         skillArgs[k] = field?.type === 'number' ? Number(v) : v
       }
-      const res = await fetch('http://localhost:8000/mcp/tools/execute', {
+      const res = await fetch(`${API_BASE}/mcp/tools/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -202,6 +206,7 @@ function SkillTestModal({ merchant, onClose }: SkillTestModalProps) {
 }
 
 export default function Explorer() {
+  const navigate = useNavigate()
   const [merchants, setMerchants] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [cityFilter, setCityFilter] = useState('')
@@ -209,7 +214,7 @@ export default function Explorer() {
 
   const fetchMerchants = () => {
     setLoading(true)
-    fetch('http://localhost:8000/v1/discover', {
+    fetch(`${API_BASE}/v1/discover`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cityFilter ? { city: cityFilter } : {})
@@ -249,6 +254,7 @@ export default function Explorer() {
             <option value="hangzhou">Hangzhou (杭州)</option>
             <option value="shanghai">Shanghai (上海)</option>
             <option value="suzhou">Suzhou (苏州)</option>
+            <option value="beijing">Beijing (北京)</option>
           </select>
         </div>
       </div>
@@ -274,20 +280,29 @@ export default function Explorer() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {merchants.map((m: any) => (
-            <div key={m.merchant_id} className="group bg-white p-6 rounded-3xl border border-slate-200/60 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col">
+            <div
+              key={m.merchant_id}
+              onClick={() => navigate(`/merchant/${encodeURIComponent(m.merchant_id)}`)}
+              className="group bg-white p-6 rounded-3xl border border-slate-200/60 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
+            >
               <div className="flex justify-between items-start mb-5">
                 <span className={`px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider
-                  ${m.type === 'hotel' ? 'bg-blue-50 text-blue-600 border border-blue-100/50' : 
-                    m.type === 'restaurant' ? 'bg-orange-50 text-orange-600 border border-orange-100/50' : 
-                    'bg-emerald-50 text-emerald-600 border border-emerald-100/50'}`}>
+                  ${m.type === 'hotel' ? 'bg-primary-soft text-primary border border-primary/20' :
+                    m.type === 'restaurant' ? 'bg-accent-soft text-accent border border-accent/20' :
+                    'bg-emerald-50 text-emerald-700 border border-emerald-100/60'}`}>
                   {m.type}
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                  {m.merchant_id.substring(0, 14)}...
-                </span>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <OnChainBadge
+                    walletAddress={m.wallet_address}
+                    did={m.did}
+                    profileHash={m.profile_hash}
+                    registerTxHash={m.register_tx_hash}
+                  />
+                </div>
               </div>
-              
-              <h3 className="text-xl font-bold text-slate-900 mb-1 leading-tight group-hover:text-blue-600 transition-colors">{m.name.en}</h3>
+
+              <h3 className="text-xl font-bold text-text mb-1 leading-tight group-hover:text-primary transition-colors">{m.name.en}</h3>
               <p className="text-slate-500 text-sm mb-4 font-medium flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
                 {m.location.city.charAt(0).toUpperCase() + m.location.city.slice(1)}, {m.location.country}
@@ -320,7 +335,7 @@ export default function Explorer() {
               </div>
               
               <button
-                onClick={() => setTestingMerchant(m)}
+                onClick={(e) => { e.stopPropagation(); setTestingMerchant(m) }}
                 className="w-full py-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-900 hover:border-slate-900 hover:text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 group/btn"
               >
                 <Code2 className="w-4 h-4 text-slate-400 group-hover/btn:text-white transition-colors" />
