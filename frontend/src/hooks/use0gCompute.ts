@@ -60,7 +60,10 @@ interface ComputeState {
   step: string | null
 }
 
-const MCP_BASE = 'http://localhost:8000'
+// Match the same env contract used by every other page so prod hits
+// api.tourskill.paking.xyz, while local dev with VITE_API_BASE_URL set
+// can still point at a local backend.
+const MCP_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
 const SYSTEM_PROMPT = `You are a helpful AI travel assistant powered by the TourSkill decentralized registry on the 0G Network.
 

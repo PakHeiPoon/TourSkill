@@ -4,6 +4,9 @@ import { BrowserProvider, Contract } from 'ethers'
 import { MERCHANT_REGISTRY_ABI, MERCHANT_REGISTRY_ADDRESS, ZERO_G_CHAIN } from '../contracts/MerchantRegistry'
 import { useT } from '../i18n'
 
+// Same env contract used by every other page so prod hits api.tourskill.paking.xyz.
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
+
 const SKILLS_BY_TYPE: Record<string, string> = {
   restaurant: 'get_menu,reserve_table,check_table_availability,get_dietary_options',
   hotel: 'check_availability,get_rates,create_booking,get_cancellation_policy',
@@ -140,7 +143,7 @@ export default function RegistrationPortal() {
   })
 
   useEffect(() => {
-    fetch('http://localhost:8000/v1/merchant-form-schema')
+    fetch(`${API_BASE}/v1/merchant-form-schema`)
       .then((res) => res.json())
       .then((data) => setSchema(data))
       .catch(() => {
@@ -229,7 +232,7 @@ export default function RegistrationPortal() {
 
     try {
       // Step 1: Save to Supabase
-      const res = await fetch('http://localhost:8000/v1/merchants', {
+      const res = await fetch(`${API_BASE}/v1/merchants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -242,7 +245,7 @@ export default function RegistrationPortal() {
       const returnedDid = data?.data?.did || ''
       const returnedId = data?.data?.merchant_id || ''
       const returnedHash = data?.data?.profile_hash || ''
-      const skillEndpoint = `http://localhost:8000/v1/merchants/${returnedId}`
+      const skillEndpoint = `${API_BASE}/v1/merchants/${returnedId}`
 
       setDid(returnedDid)
       setMerchantId(returnedId)
@@ -361,7 +364,7 @@ export default function RegistrationPortal() {
             <div>
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">{t('register.success.endpoint')}</label>
               <div className="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded-lg text-slate-700 break-all">
-                http://localhost:8000/v1/merchants/{merchantId}
+                {API_BASE}/v1/merchants/{merchantId}
               </div>
             </div>
           </div>
