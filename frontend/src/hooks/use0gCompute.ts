@@ -30,12 +30,12 @@ export const NETWORKS: Record<NetworkType, {
   },
 }
 
-interface ToolCall {
+export interface ToolCall {
   id: string
   function: { name: string; arguments: string }
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
   tool_calls?: ToolCall[]
@@ -65,7 +65,7 @@ interface ComputeState {
 // can still point at a local backend.
 const MCP_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
-const SYSTEM_PROMPT = `You are a helpful AI travel assistant powered by the TourSkill decentralized registry on the 0G Network.
+export const SYSTEM_PROMPT = `You are a helpful AI travel assistant powered by the TourSkill decentralized registry on the 0G Network.
 
 You help users discover tourism merchants (hotels, restaurants, attractions) and interact with their on-chain skills.
 
@@ -86,7 +86,7 @@ Always be concise and helpful. Format prices with ¥ symbol for CNY.
 Today's date is ${new Date().toISOString().slice(0, 10)}.
 Tomorrow's date is ${new Date(Date.now() + 86400000).toISOString().slice(0, 10)}.`
 
-const TOOL_DEFINITIONS = [
+export const TOOL_DEFINITIONS = [
   {
     type: 'function' as const,
     function: {
@@ -134,7 +134,7 @@ const TOOL_DEFINITIONS = [
   },
 ]
 
-async function executeMcpTool(toolName: string, args: Record<string, unknown>): Promise<string> {
+export async function executeMcpTool(toolName: string, args: Record<string, unknown>): Promise<string> {
   const res = await fetch(`${MCP_BASE}/mcp/tools/execute`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

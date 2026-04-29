@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bot, Send, Terminal, Sparkles, CheckCircle2, Navigation, Activity, RotateCcw, Wallet, Loader2, AlertCircle } from 'lucide-react'
+import { Bot, Send, Terminal, Sparkles, CheckCircle2, Navigation, Activity, RotateCcw, Wallet, Loader2, AlertCircle, Key, Eye, EyeOff } from 'lucide-react'
 import { use0gCompute, NETWORKS, type NetworkType } from '../hooks/use0gCompute'
+import { useQiniuCompute, fetchQiniuModels, type QiniuModel } from '../hooks/useQiniuCompute'
 import { useT } from '../i18n'
+
+type ProviderKind = 'zerog' | 'qiniu'
+const QINIU_KEY_STORAGE = 'tourskill_qiniu_key'
+const QINIU_MODEL_STORAGE = 'tourskill_qiniu_model'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -16,15 +21,62 @@ interface LogEntry {
 
 export default function AgentDemo() {
   const { t } = useT()
-  const { ready, model, provider, network: connectedNetwork, error: computeError, loading: computeLoading, step, connect, chat } = use0gCompute()
+
+  // Both providers are instantiated unconditionally (rules of hooks).
+  // The active one is selected at render time based on `providerKind`.
+  // The idle hook just keeps its initial state — no network calls.
+  const zerog = use0gCompute()
+  const qiniu = useQiniuCompute()
+
+  const [providerKind, setProviderKind] = useState<ProviderKind>('zerog')
+  const active = providerKind === 'qiniu' ? qiniu : zerog
+  const { ready, model, error: computeError, loading: computeLoading, step, chat } = active
+  const connectedNetwork = zerog.network  // 0G-specific badge field
 
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('testnet')
+
+  // Qiniu inputs — persist key + model in sessionStorage so a refresh
+  // doesn't ask the visitor to re-paste them, but they vanish on tab close.
+  const [qiniuKey, setQiniuKey] = useState<string>('')
+  const [qiniuModelId, setQiniuModelId] = useState<string>('')
+  const [qiniuModels, setQiniuModels] = useState<QiniuModel[]>([])
+  const [qiniuModelsLoading, setQiniuModelsLoading] = useState<boolean>(false)
+  const [qiniuKeyRevealed, setQiniuKeyRevealed] = useState<boolean>(false)
+
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [logs, setLogs] = useState<LogEntry[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null)
   const logsEndRef = useRef<HTMLDivElement>(null)
+
+  // Restore stored Qiniu inputs once on mount.
+  useEffect(() => {
+    try {
+      const k = sessionStorage.getItem(QINIU_KEY_STORAGE) ?? ''
+      const m = sessionStorage.getItem(QINIU_MODEL_STORAGE) ?? ''
+      if (k) setQiniuKey(k)
+      if (m) setQiniuModelId(m)
+    } catch { /* ignore */ }
+  }, [])
+
+  // Lazy-load the Qiniu model catalog the first time the user switches
+  // to Qiniu mode. Public endpoint — no key needed.
+  useEffect(() => {
+    if (providerKind !== 'qiniu' || qiniuModels.length > 0 || qiniuModelsLoading) return
+    setQiniuModelsLoading(true)
+    fetchQiniuModels()
+      .then(list => {
+        setQiniuModels(list)
+        // Default to deepseek-v3.2 if present, else first model.
+        if (!qiniuModelId && list.length > 0) {
+          const preferred = list.find(m => m.id.toLowerCase().includes('deepseek')) ?? list[0]
+          setQiniuModelId(preferred.id)
+        }
+      })
+      .catch(() => { /* let user know via the inline error path if needed */ })
+      .finally(() => setQiniuModelsLoading(false))
+  }, [providerKind, qiniuModels.length, qiniuModelsLoading, qiniuModelId])
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, loading])
   useEffect(() => { logsEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [logs])
@@ -38,7 +90,26 @@ export default function AgentDemo() {
   }
 
   const handleConnect = async () => {
-    await connect(selectedNetwork, addLog)
+    if (providerKind === 'qiniu') {
+      // Persist before connecting so even a failed connect leaves the
+      // user's typed values around (annoying to lose them on a typo).
+      try {
+        if (qiniuKey) sessionStorage.setItem(QINIU_KEY_STORAGE, qiniuKey)
+        if (qiniuModelId) sessionStorage.setItem(QINIU_MODEL_STORAGE, qiniuModelId)
+      } catch { /* ignore */ }
+      await qiniu.connect(qiniuKey, qiniuModelId, addLog)
+    } else {
+      await zerog.connect(selectedNetwork, addLog)
+    }
+  }
+
+  // Switching providers should reset chat history + logs so the user
+  // doesn't see stale context from the previous backend.
+  const switchProvider = (next: ProviderKind) => {
+    if (next === providerKind) return
+    setProviderKind(next)
+    setMessages([])
+    setLogs([])
   }
 
   const handleSend = async () => {
@@ -103,36 +174,157 @@ export default function AgentDemo() {
         </button>
       </div>
 
-      {/* Connection Status Bar */}
+      {/* Connection Status Bar — provider-aware */}
       {!ready && (
-        <div className="mb-6 p-4 bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Wallet className="w-5 h-5 text-indigo-600" />
-              <div>
-                <p className="text-sm font-semibold text-slate-800">{t('demo.connectTitle')}</p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {t('demo.connect.desc')}
-                </p>
+        <div className="mb-6 p-4 bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-sm space-y-4">
+          {/* Provider toggle */}
+          <div className="inline-flex p-1 bg-slate-100 rounded-xl">
+            <button
+              onClick={() => switchProvider('zerog')}
+              disabled={computeLoading}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                providerKind === 'zerog'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              {t('demo.provider.zerog')}
+            </button>
+            <button
+              onClick={() => switchProvider('qiniu')}
+              disabled={computeLoading}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                providerKind === 'qiniu'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Key className="w-3.5 h-3.5" />
+              {t('demo.provider.qiniu')}
+            </button>
+          </div>
+
+          {providerKind === 'zerog' ? (
+            // ─── 0G Compute: wallet-paid inference ───
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Wallet className="w-5 h-5 text-indigo-600" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{t('demo.connectTitle')}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {t('demo.connect.desc')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedNetwork}
+                    onChange={(e) => setSelectedNetwork(e.target.value as NetworkType)}
+                    disabled={computeLoading}
+                    className="text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+                  >
+                    {Object.entries(NETWORKS).map(([key, net]) => (
+                      <option key={key} value={key}>{net.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleConnect}
+                    disabled={computeLoading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
+                  >
+                    {computeLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {t('demo.connect.connecting')}
+                      </>
+                    ) : (
+                      <>
+                        <Wallet className="w-4 h-4" />
+                        {t('demo.connect.cta')}
+                      </>
+                    )}
+                  </button>
+                </div>
+                {step && (
+                  <span className="text-xs text-indigo-500 font-medium animate-pulse">{step}</span>
+                )}
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-2">
-                {/* Network Selector */}
-                <select
-                  value={selectedNetwork}
-                  onChange={(e) => setSelectedNetwork(e.target.value as NetworkType)}
-                  disabled={computeLoading}
-                  className="text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+          ) : (
+            // ─── Qiniu AIGC: API-key-paid inference ───
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Key className="w-5 h-5 text-indigo-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{t('demo.qiniu.title')}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{t('demo.qiniu.desc')}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    {t('demo.qiniu.apiKey')}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={qiniuKeyRevealed ? 'text' : 'password'}
+                      value={qiniuKey}
+                      onChange={(e) => setQiniuKey(e.target.value)}
+                      placeholder="sk-…"
+                      disabled={computeLoading}
+                      autoComplete="off"
+                      className="w-full text-sm font-mono border border-slate-200 rounded-xl px-3 py-2.5 pr-10 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setQiniuKeyRevealed(v => !v)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700"
+                      aria-label={qiniuKeyRevealed ? 'Hide key' : 'Show key'}
+                    >
+                      {qiniuKeyRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    {t('demo.qiniu.model')}
+                  </label>
+                  <select
+                    value={qiniuModelId}
+                    onChange={(e) => setQiniuModelId(e.target.value)}
+                    disabled={computeLoading || qiniuModelsLoading}
+                    className="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+                  >
+                    {qiniuModelsLoading ? (
+                      <option>{t('demo.qiniu.loadingModels')}</option>
+                    ) : qiniuModels.length === 0 ? (
+                      <option>{t('demo.qiniu.noModels')}</option>
+                    ) : (
+                      qiniuModels.map(m => (
+                        <option key={m.id} value={m.id}>{m.id}</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <a
+                  href="https://portal.qiniu.com/aitoken/key"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                 >
-                  {Object.entries(NETWORKS).map(([key, net]) => (
-                    <option key={key} value={key}>{net.name}</option>
-                  ))}
-                </select>
+                  {t('demo.qiniu.getKey')} →
+                </a>
                 <button
                   onClick={handleConnect}
-                  disabled={computeLoading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
+                  disabled={computeLoading || !qiniuKey || !qiniuModelId}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
                 >
                   {computeLoading ? (
                     <>
@@ -141,19 +333,20 @@ export default function AgentDemo() {
                     </>
                   ) : (
                     <>
-                      <Wallet className="w-4 h-4" />
-                      {t('demo.connect.cta')}
+                      <Key className="w-4 h-4" />
+                      {t('demo.qiniu.cta')}
                     </>
                   )}
                 </button>
               </div>
               {step && (
-                <span className="text-xs text-indigo-500 font-medium animate-pulse">{step}</span>
+                <span className="block text-xs text-indigo-500 font-medium animate-pulse">{step}</span>
               )}
             </div>
-          </div>
+          )}
+
           {computeError && (
-            <div className="mt-3 flex items-start gap-2 text-sm text-rose-600 bg-rose-50 p-3 rounded-xl">
+            <div className="flex items-start gap-2 text-sm text-rose-600 bg-rose-50 p-3 rounded-xl">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{computeError}</span>
             </div>
@@ -167,10 +360,28 @@ export default function AgentDemo() {
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-emerald-800">{t('demo.connectBadge', { network: NETWORKS[connectedNetwork || 'testnet'].name })}</p>
-            <p className="text-xs text-emerald-600 font-mono">
-              {t('demo.connected.model', { model: model || '', provider: `${provider?.slice(0, 8)}...${provider?.slice(-4)}` })}
-            </p>
+            {providerKind === 'qiniu' ? (
+              <>
+                <p className="text-sm font-semibold text-emerald-800">
+                  {t('demo.qiniu.connectedBadge')}
+                </p>
+                <p className="text-xs text-emerald-600 font-mono">
+                  {t('demo.qiniu.connectedModel', { model: model || '' })}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-emerald-800">
+                  {t('demo.connectBadge', { network: NETWORKS[connectedNetwork || 'testnet'].name })}
+                </p>
+                <p className="text-xs text-emerald-600 font-mono">
+                  {t('demo.connected.model', {
+                    model: model || '',
+                    provider: `${zerog.provider?.slice(0, 8)}...${zerog.provider?.slice(-4)}`,
+                  })}
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}
