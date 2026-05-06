@@ -14,13 +14,22 @@ We adopt published specifications **as-is** and integrate against them.
 
 - **ERC-8004** for on-chain agent identity / reputation / validation registries.
 - **A2A Agent Card** for the off-chain JSON descriptor that bridges chain identity to a callable agent endpoint.
-- **x402** for HTTP-native payment handshakes (Coinbase, Base-native).
+- **x402** for HTTP-native payment handshakes (Coinbase, Base-native) — used **only as Coinbase published it**: stateless per-call micropayments via EIP-3009 `transferWithAuthorization`. We do not extend its wire format with custom escrow or hold/release semantics.
+- **EIP-712** for typed-data signatures when (and if) we build BookingEscrow — Seaport-style, **not** layered on x402.
 - **EIP-191** for off-chain signature verification (already in production for our auth).
 - **OpenAI tool-call wire format** for the agent ↔ skill protocol (every major LLM provider supports it).
 
 We do **not** fork these specs to "improve" them. If we hit a real limitation,
 we propose the change upstream or use the standard's own extension hooks
 (e.g. `extensions` field in agent-card.json).
+
+**Corollary — don't conflate handshake protocols with settlement
+instruments.** An earlier draft of `05_X402_PAYMENT_FLOW.md` packaged
+x402 as a payment rail for booking-level escrow. That violated this
+principle in spirit (non-standard usage of a standard handshake) even
+though we hadn't formally forked. Rule: **one wire format, one purpose.**
+x402 is per-call micropayment. Hold-and-release is its own thing,
+designed independently.
 
 **Why this matters.** A registry whose entries can be discovered and consumed
 by clients we never wrote — by Coinbase wallets, by erc8004.org indexers, by

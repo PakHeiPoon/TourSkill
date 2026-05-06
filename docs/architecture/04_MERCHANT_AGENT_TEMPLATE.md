@@ -190,39 +190,45 @@ restart, it shows up in agent-card.json. No manual registration.
 
 ### 3.4 x402 middleware integration
 
-For paid skills (`create_booking`, `purchase_ticket`, etc.), the skill
-declares its pricing and the x402 middleware handles the rest:
+> **Boundary** (revised — see [`05_X402_PAYMENT_FLOW.md` § Scope](./05_X402_PAYMENT_FLOW.md)):
+> x402 in TourSkill is for **stateless per-call micropayments only**
+> (paid metadata skills like `get_rates_premium`). It is **not** the
+> payment rail for `create_booking` — booking-level held funds use a
+> separate `BookingEscrow` instrument (Phase C, deferred).
+
+**Block 1 — paid metadata skill** (Phase B-min target):
 
 ```typescript
 export default defineSkill({
-  name: 'create_booking',
+  name: 'get_rates_premium',
   // ...
   pricing: {
-    type: 'dynamic',  // price computed per-call
-    quoteFn: async ({ input, ctx }) => {
-      const avail = await ctx.skills.check_availability.call(input);
-      if (!avail.available) throw new SkillError('UNAVAILABLE');
-      return {
-        amount_usdc: avail.total_usdc,
-        escrow: ctx.config.escrowContract,
-        disputeWindowSeconds: 86400,
-        // settles to merchant after check_out + dispute window
-        releaseAt: addSecs(input.check_out, 86400),
-      };
-    },
+    type: 'flat',
+    flatUsdc: 10_000,            // $0.01 USDC, paid once per call
   },
   async handle({ input, ctx, payment }) {
-    // payment is set by x402 middleware after escrow lock confirmed on-chain
-    const booking = await ctx.store.createBooking({
-      ...input,
-      escrow_tx: payment.escrowTxHash,
-      payer:     payment.payer,
-    });
-    await ctx.store.setAvailability(input.room_type, input.check_in, -1);
-    return { booking_id: booking.id, confirmation_code: booking.code };
+    // payment is set by x402 middleware after EIP-3009 transfer lands.
+    // No escrow, no hold, no release — direct USDC into merchant wallet.
+    return premiumRateMatrix(input);
   },
 });
 ```
+
+The middleware (Coinbase `x402-hono`) handles 402 → verify → 200; the
+skill handler stays oblivious. **One HTTP round-trip, one USDC transfer,
+no contract on the merchant side.**
+
+**Block 2 — BookingEscrow (deferred to Phase C)**: when (and if) we
+ship hold-and-release semantics for `create_booking`, the wire format
+will be **separate** from x402: the user signs an EIP-712 typed message,
+the client calls `BookingEscrow.lock(intentId, amount, payee, releaseAt)`
+directly, and the booking endpoint accepts a Seaport-style order
+reference, not an x402 payment proof. Block 2 will get its own document
+(`05B_BOOKING_ESCROW.md`) when scoped.
+
+In Phase A/B-min, `create_booking` stays free (creates a `pending`
+booking; payment flow TBD per merchant policy — many merchants will
+prefer auth-and-capture via direct USDC transfer over true escrow).
 
 The middleware handles the 402 response, polling escrow contract for
 deposit confirmation, retrying the request, and adding the `payment`

@@ -5,9 +5,54 @@
 > Standards: HTTP `402 Payment Required` (RFC 9110); Coinbase x402 (2025
 > publication); ERC-20 USDC on Base. We adopt x402 as Coinbase published it.
 
+---
+
+## Scope — what x402 IS and IS NOT, in TourSkill (read first)
+
+**Earlier drafts of this document conflated two distinct problems.** This
+revision draws the boundary so future implementers don't repeat the
+mistake.
+
+| Layer | Wire format | Settlement instrument | Use it for |
+|---|---|---|---|
+| **Block 1 — x402 paid skill** | HTTP 402 + `EIP-3009 transferWithAuthorization` | direct USDC transfer (no contract) | per-call micropayments (`get_rates_premium`, `get_concierge_recommendation` …). Cents-to-dollars range. **Stateless.** |
+| **Block 2 — BookingEscrow** (deferred) | EIP-712 typed-data signature → custom contract call | `BookingEscrow.lock(intentId, amount, payee, releaseAt)` | booking-level held funds. Hundreds-to-thousands of dollars. Time-locked + dispute window. **Stateful.** |
+
+**Two rules:**
+
+1. **x402 is not a payment-rail wrapper for escrow.** The Coinbase x402
+   spec defines a stateless per-request handshake. Coercing it into
+   booking-level hold/release semantics produces a non-standard wire
+   format that any other client implementing x402-by-the-spec will not
+   understand. Don't do it.
+2. **BookingEscrow is its own protocol**, designed Seaport-style: the
+   user signs an EIP-712 typed message, the merchant (or the user
+   directly) calls `lock()`, a keeper calls `release()` after
+   `releaseAt`. **It does not return HTTP 402 and is not part of the
+   x402 spec.**
+
+### Status by phase
+
+| Phase | x402 (Block 1) | BookingEscrow (Block 2) |
+|---|---|---|
+| **A** (current) | not built — free skills only | not built |
+| **B-min** (next) | ✅ ship: paid skill MVP w/ official Coinbase SDK + Base Sepolia E2E test | not built |
+| **C** (TBD, market-driven) | unchanged | only build if real merchants ask. Many small merchants are fine with auth-and-capture (no escrow) |
+
+The flow diagrams below describe the **Block 2** target shape for when
+(and if) we build BookingEscrow. They do **not** describe how Block 1
+works — Block 1 is much simpler (one HTTP round-trip, one USDC transfer,
+no contract). Block 1 will get its own document at
+`05A_X402_PAID_SKILL.md` when we ship it.
+
+---
+
 This is the spec for how a user-agent pays a merchant-agent for a paid
 skill, where the funds sit between booking and settlement, how disputes
 work, and what the contract looks like.
+
+> **All sections below are Block 2 (BookingEscrow), deferred to Phase
+> C.** They are kept here as a design reference, not a roadmap commitment.
 
 ---
 
