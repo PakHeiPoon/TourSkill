@@ -20,6 +20,10 @@ build/
 .idea/
 .trae/
 .DS_Store
+
+# Claude Code project-local overrides (per-developer; team settings live in .claude/settings.json)
+.claude/settings.local.json
+
 *.suo
 *.ntvs*
 *.njsproj
@@ -37,6 +41,12 @@ pnpm-debug.log*
 # Hardhat / Solidity
 contracts/cache/
 contracts/artifacts/
+
+# Foundry (contracts/erc8004) build + cache + downloaded libs
+contracts/erc8004/out/
+contracts/erc8004/cache/
+contracts/erc8004/broadcast/
+contracts/erc8004/lib/
 
 # Internal-only scripts (contain wallet addresses + seed data, not for public)
 # Note: match files (`/*`) not the directory (`/`) — with `/`, negations inside
