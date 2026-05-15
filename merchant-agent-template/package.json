@@ -2,7 +2,7 @@
   "name": "merchant-agent-template",
   "version": "0.1.0",
   "private": true,
-  "description": "Reference TypeScript / Hono merchant-agent for TourSkill — self-host or platform-host, both indistinguishable from the outside.",
+  "description": "Reference TypeScript / Hono merchant-agent for Concourse — self-host or platform-host, both indistinguishable from the outside.",
   "license": "MIT",
   "packageManager": "pnpm@10.32.1",
   "scripts": {

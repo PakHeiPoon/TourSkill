@@ -1,6 +1,6 @@
 # Deployed contract addresses
 
-Living record of every TourSkill contract deployment. Append a new
+Living record of every Concourse contract deployment. Append a new
 section per deploy; never delete entries — old addresses stay
 discoverable for forensic / archival reasons.
 

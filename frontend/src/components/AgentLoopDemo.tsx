@@ -35,9 +35,9 @@ const SCRIPT: DemoLine[] = [
 
   { kind: 'header', text: '[Step 2/4] POST /v1/discover  →  on-chain registry', delay: 600 },
   { kind: 'arrow', text: '→ 3 candidates returned (verified DIDs):' },
-  { kind: 'comment', text: '   • Zhi Wei Guan         did:tourskill:merchant:ad8a…' },
-  { kind: 'comment', text: '   • Green Tea Restaurant did:tourskill:merchant:fa5d…' },
-  { kind: 'comment', text: '   • Grandma\'s Kitchen    did:tourskill:merchant:fc41…' },
+  { kind: 'comment', text: '   • Zhi Wei Guan         did:concourse:merchant:ad8a…' },
+  { kind: 'comment', text: '   • Green Tea Restaurant did:concourse:merchant:fa5d…' },
+  { kind: 'comment', text: '   • Grandma\'s Kitchen    did:concourse:merchant:fc41…' },
   { kind: 'spacer', text: '' },
 
   { kind: 'header', text: '[Step 3/4] Personalizing rank from your memory…', delay: 700 },
@@ -165,7 +165,7 @@ export default function AgentLoopDemo(): React.JSX.Element {
             <span className="w-3 h-3 rounded-full bg-green-500" />
           </div>
           <div className="text-slate-400 text-xs font-mono">
-            tourskill agent · {isPlaying ? t('demo.terminalLabel.running') : t('demo.terminalLabel.idle')}
+            concourse agent · {isPlaying ? t('demo.terminalLabel.running') : t('demo.terminalLabel.idle')}
           </div>
           <button
             onClick={() => playScript()}

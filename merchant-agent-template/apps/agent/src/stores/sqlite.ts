@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 const DEFAULT_SETTINGS: MerchantSettings = {
   name:        { en: 'Untitled Merchant', zh: '未命名商家' },
-  description: { en: 'A new merchant on TourSkill.', zh: 'TourSkill 上的新商家。' },
+  description: { en: 'A new merchant on Concourse.', zh: 'Concourse 上的新商家。' },
   merchantType: 'hotel',
   location: {
     country: 'CN',

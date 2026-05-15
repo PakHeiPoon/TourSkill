@@ -1,5 +1,5 @@
 /**
- * BaseAgentPanel — surfaces TourSkill agents registered on Base Sepolia
+ * BaseAgentPanel — surfaces Concourse agents registered on Base Sepolia
  * IdentityRegistry. Reads chain directly (no backend proxy), fetches each
  * agent's card from its own URL, and lets the user invoke skills against
  * that URL with on-the-spot SHA-256 verification.

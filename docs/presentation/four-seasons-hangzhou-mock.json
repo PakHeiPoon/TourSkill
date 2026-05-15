@@ -1,0 +1,31 @@
+{
+  "merchant_type": "hotel",
+  "name": "Four Seasons Hotel Hangzhou at West Lake",
+  "description": "A garden-style luxury resort tucked beside Jinsha Harbour on the western shore of West Lake. 81 lake-view rooms across six low-rise pavilions, set among ancient camphor trees, koi ponds, and wooden walkways inspired by Jiangnan private gardens. Five minutes from Lingyin Temple, ten minutes from the heart of West Lake.",
+  "city": "hangzhou",
+  "country": "CN",
+  "address": "5 Lingyin Road, West Lake District, Hangzhou, Zhejiang",
+  "latitude": 30.2425,
+  "longitude": 120.1153,
+  "contact_phone": "+86 571 8829 8888",
+  "contact_email": "reservations.hgz@fourseasons.com",
+  "opening_hours": "24/7",
+  "website_url": "https://www.fourseasons.com/hangzhou/",
+  "price_level": 5,
+  "tags": ["luxury", "lakeside", "west-lake", "heritage", "spa", "garden"],
+  "languages_supported": ["en", "zh", "ja", "ko", "fr"],
+  "supported_skills": [
+    "check_availability",
+    "get_rates",
+    "create_booking",
+    "get_cancellation_policy"
+  ],
+  "specific_fields": {
+    "star_rating": 5,
+    "room_types": ["Lake View Premier Room", "Garden Villa", "Presidential Suite"],
+    "check_in_time": "15:00",
+    "check_out_time": "12:00",
+    "breakfast_included": true,
+    "parking_available": true
+  }
+}

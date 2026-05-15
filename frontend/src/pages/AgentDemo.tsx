@@ -5,8 +5,8 @@ import { useQiniuCompute, fetchQiniuModels, type QiniuModel } from '../hooks/use
 import { useT } from '../i18n'
 
 type ProviderKind = 'zerog' | 'qiniu'
-const QINIU_KEY_STORAGE = 'tourskill_qiniu_key'
-const QINIU_MODEL_STORAGE = 'tourskill_qiniu_model'
+const QINIU_KEY_STORAGE = 'concourse_qiniu_key'
+const QINIU_MODEL_STORAGE = 'concourse_qiniu_model'
 
 interface Message {
   role: 'user' | 'assistant'

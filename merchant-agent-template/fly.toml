@@ -2,7 +2,7 @@
 #
 # Deploy:
 #   fly auth login                   # one-time
-#   fly apps create tourskill-wumingchu --org personal
+#   fly apps create concourse-wumingchu --org personal
 #   fly volumes create agent_data --size 1 --region hkg --yes
 #   fly secrets set \
 #     IDENTITY_REGISTRY=0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f \
@@ -14,7 +14,7 @@
 #     PUBLIC_URL=https://wumingchu.tourskill.paking.xyz
 #   fly deploy
 
-app = "tourskill-wumingchu"
+app = "concourse-wumingchu"
 primary_region = "nrt"
 
 [build]

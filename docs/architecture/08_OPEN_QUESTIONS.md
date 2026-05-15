@@ -38,7 +38,7 @@ or if we move chain primary to a chain that doesn't support log filters.
 
 ## Q2. Single global indexer vs decentralized indexer?
 
-**Question.** Should there be exactly one TourSkill-run indexer, or do we
+**Question.** Should there be exactly one Concourse-run indexer, or do we
 encourage / require multiple independent indexers for resilience?
 
 **Trade-off.**
@@ -52,7 +52,7 @@ code so anyone can run their own (the Node service is open source). Move
 toward multi-indexer in v2 if a real need emerges (e.g., enterprise
 customer wants a private indexer).
 
-**Revisit when:** TourSkill's indexer goes down for >1 day OR an
+**Revisit when:** Concourse's indexer goes down for >1 day OR an
 ecosystem partner asks for the data feed.
 
 ---
@@ -169,7 +169,7 @@ spec works.
 
 ## Q8. Dispute arbitration — who in v1?
 
-**Question.** [05_X402_PAYMENT_FLOW.md](./05_X402_PAYMENT_FLOW.md) §3 says we (TourSkill) are the
+**Question.** [05_X402_PAYMENT_FLOW.md](./05_X402_PAYMENT_FLOW.md) §3 says we (Concourse) are the
 arbitrator in v1. How do we structure that?
 
 **Trade-off.**
@@ -213,7 +213,7 @@ we hit Supabase pricing pain on feedback archive.
 
 ## Q10. Multi-tenant agent runtime — how isolated?
 
-**Question.** When TourSkill platform-hosts merchant-agents, how strong
+**Question.** When Concourse platform-hosts merchant-agents, how strong
 is tenant isolation? Same Hono process with row-level Postgres filter?
 Separate process per tenant? Separate VM per tenant?
 
@@ -304,7 +304,7 @@ where the friction is.
 
 **Question.** Eventually we want fiat on-ramps (Visa → USDC → escrow) to
 reach non-crypto-native customers. Does that pull us into KYC / AML
-territory and break "TourSkill never custodies"?
+territory and break "Concourse never custodies"?
 
 **Trade-off.**
 - **Stay crypto-only:** never custody, never need KYC. Limits TAM to

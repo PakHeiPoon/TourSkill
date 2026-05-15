@@ -1,0 +1,31 @@
+{
+  "merchant_type": "hotel",
+  "name": "Four Seasons Hotel Guangzhou",
+  "description": "Occupying floors 70 to 100 of the 103-storey Guangzhou International Finance Center, this is one of the highest hotels in the world. 344 guest rooms with floor-to-ceiling Pearl River views, a 30-storey sky-lit atrium designed by Wilkinson Eyre, an indoor pool on the 70th floor, and five restaurants including the Michelin-recognised Yu Yue Heen Cantonese fine dining. Heart of Zhujiang New Town CBD, 8 minutes' walk from Canton Tower across the river.",
+  "city": "guangzhou",
+  "country": "CN",
+  "address": "5 Zhujiang West Road, Zhujiang New Town, Tianhe District, Guangzhou, Guangdong",
+  "latitude": 23.1183,
+  "longitude": 113.3220,
+  "contact_phone": "+86 20 8883 3888",
+  "contact_email": "reservations.gua@fourseasons.com",
+  "opening_hours": "24/7",
+  "website_url": "https://www.fourseasons.com/guangzhou/",
+  "price_level": 5,
+  "tags": ["luxury", "skyscraper", "cbd", "river-view", "michelin", "business"],
+  "languages_supported": ["en", "zh", "ja", "ko", "fr"],
+  "supported_skills": [
+    "check_availability",
+    "get_rates",
+    "create_booking",
+    "get_cancellation_policy"
+  ],
+  "specific_fields": {
+    "star_rating": 5,
+    "room_types": ["Deluxe Premier Room", "Premier Suite", "Four Seasons Executive Suite", "Presidential Suite"],
+    "check_in_time": "15:00",
+    "check_out_time": "12:00",
+    "breakfast_included": true,
+    "parking_available": true
+  }
+}

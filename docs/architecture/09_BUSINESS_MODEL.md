@@ -2,7 +2,7 @@
 
 > Reference: [00_PRINCIPLES.md](./00_PRINCIPLES.md), [01_TARGET_ARCHITECTURE.md](./01_TARGET_ARCHITECTURE.md).
 
-This doc defines how TourSkill makes money. The shape of the business model
+This doc defines how Concourse makes money. The shape of the business model
 is load-bearing on the architecture: it determines what the platform-hosted
 runtime needs to do, what self-hosted users get for free, and what we'll
 never charge for.
@@ -30,7 +30,7 @@ This puts us in good company:
 | Postgres | postgresql.org | Supabase, Neon, Crunchy |
 | Next.js / React | framework | Vercel, Netlify |
 | Bitcoin / Ethereum | the chain | Coinbase, Alchemy, Infura |
-| **A2A / ERC-8004 / x402** | the protocol | **TourSkill (us)** |
+| **A2A / ERC-8004 / x402** | the protocol | **Concourse (us)** |
 
 The pattern is durable: open standards win adoption; convenience products
 win revenue. We pick that side deliberately.
@@ -41,14 +41,14 @@ win revenue. We pick that side deliberately.
 
 | | Self-hosted | Platform-hosted |
 |---|---|---|
-| Who runs the merchant-agent process | Merchant | TourSkill |
+| Who runs the merchant-agent process | Merchant | Concourse |
 | Hosting cost | Merchant pays their cloud bill (~$5-50/mo Vercel/Render/Fly) | Bundled in subscription |
 | Wallet key custody | Merchant | Merchant *(we never custody)* |
-| Inventory data location | Merchant's DB | TourSkill multi-tenant Postgres, isolated per tenant |
+| Inventory data location | Merchant's DB | Concourse multi-tenant Postgres, isolated per tenant |
 | Updates / security patches | Merchant runs `git pull` | We push automatically |
 | External API surface | Identical | Identical |
 | ERC-8004 registration | Same flow | Same flow |
-| Cost to merchant | $0 to TourSkill | Subscription (see below) |
+| Cost to merchant | $0 to Concourse | Subscription (see below) |
 
 **The architectural rule is the killer feature for both sides:** a merchant
 can start on platform-hosted, outgrow it, switch to self-hosted, and **none
@@ -70,7 +70,7 @@ Merchants can pay in fiat too via standard rails — same headline price.
 - 1 location
 - Up to 100 settled bookings/month
 - Default skill set (no custom skills)
-- TourSkill subdomain (`<slug>.merchants.tourskill.paking.xyz`)
+- Concourse subdomain (`<slug>.merchants.tourskill.paking.xyz`)
 - Community support only
 
 **Why free**: indie hosts, single-property B&Bs, the "show up at a hackathon" use case. Discovery surface for the network. We bear the cost; the network effect is the return.
@@ -116,10 +116,10 @@ This is the hard bargain — these things stay zero-cost regardless of tier:
 - **Self-hosting.** A merchant can always opt out of our hosting and run
   their own. We will never gate this with feature flags or "premium-only"
   protocol extensions.
-- **Discovery via TourSkill registry indexer.** Both self-hosted and
+- **Discovery via Concourse registry indexer.** Both self-hosted and
   platform-hosted merchants appear in the same `/v1/discover` results.
 - **User-side agent install.** End users (and their user-agents) never pay
-  TourSkill anything. They pay the merchants directly via x402.
+  Concourse anything. They pay the merchants directly via x402.
 - **Migration off our platform.** A merchant on Tier 2 who wants to leave
   gets a one-click export of their inventory + agent-card. We facilitate
   the DNS cutover.

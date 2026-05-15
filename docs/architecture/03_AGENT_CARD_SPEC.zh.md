@@ -3,7 +3,7 @@
 > 引用：[00_PRINCIPLES.zh.md](./00_PRINCIPLES.zh.md)、[02_ERC8004_CONTRACT_DESIGN.zh.md](./02_ERC8004_CONTRACT_DESIGN.zh.md)。
 >
 > 标准：A2A *Agent Card*（Google A2A 协议）。我们原样采用上游 JSON
-> schema，把 TourSkill 自定义字段放在 spec 的 `extensions` 字段里。
+> schema，把 Concourse 自定义字段放在 spec 的 `extensions` 字段里。
 > 完整 spec 在 `https://google.github.io/A2A/`。本文档总结**我们网络
 > 里每个 merchant-agent 必须服务的内容**。
 
@@ -16,7 +16,7 @@ user-agent：这个 agent 是谁、提供哪些 skill、如何认证、把支付
 
 ## 1. 托管要求
 
-每个 TourSkill merchant-agent **必须**：
+每个 Concourse merchant-agent **必须**：
 
 - 在规范路径 `/.well-known/agent-card.json` 上服务 agent-card。
 - 返回 `application/json`，带 `Cache-Control: public, max-age=300`（5 分钟）。
@@ -39,7 +39,7 @@ user-agent：这个 agent 是谁、提供哪些 skill、如何认证、把支付
   "schemaVersion": "1.0",                  // A2A schema 版本
   "name": "Wuming Chu Huangshan Hidden Retreat",
   "description": "28-room boutique hideaway in Huangshan ...",
-  "url": "https://wumingchu.tourskill.example",  // 此 agent 的 base URL
+  "url": "https://wumingchu.concourse.example",  // 此 agent 的 base URL
   "version": "0.3.2",                       // merchant-agent 自己的 semver
 
   // 此 agent 暴露的 skill
@@ -80,7 +80,7 @@ user-agent：这个 agent 是谁、提供哪些 skill、如何认证、把支付
   // 我们服务的人类可读接口（信息性）
   "interfaces": ["application/json"],
 
-  // TourSkill 自定义扩展 —— 命名空间隔离
+  // Concourse 自定义扩展 —— 命名空间隔离
   "extensions": {
     "tourskill.org/v1/payment":      { ... },
     "tourskill.org/v1/cancellation": { ... },
@@ -128,14 +128,14 @@ tool-call 标准**，所以任何支持 tool call 的 LLM 都能直接消费。
 
 ### 4.1 `bearer`
 
-来自成功 TourSkill auth 流程的标准 bearer token。
+来自成功 Concourse auth 流程的标准 bearer token。
 
 ```
 Authorization: Bearer <token>
 ```
 
 通过 merchant-agent 的 `/auth/challenge` → `/auth/verify` 流程铸造
-（镜像我们现有 TourSkill auth，所以同样的 EIP-191 challenge-response
+（镜像我们现有 Concourse auth，所以同样的 EIP-191 challenge-response
 适用）。
 
 ### 4.2 `eip191`
@@ -157,9 +157,9 @@ agent 验证 `ecrecover(requestHash, signature) == X-Agent-Address`，
 
 ---
 
-## 5. TourSkill 扩展（带版本）
+## 5. Concourse 扩展（带版本）
 
-所有 TourSkill 自定义字段在 `extensions["tourskill.org/v1/*"]` 下。
+所有 Concourse 自定义字段在 `extensions["tourskill.org/v1/*"]` 下。
 **命名空间带版本**让我们能在不破坏旧客户端的前提下演化 schema。
 
 ### 5.1 `tourskill.org/v1/payment`
@@ -257,7 +257,7 @@ agent 验证 `ecrecover(requestHash, signature) == X-Agent-Address`，
 
 ## 7. 必填 vs 可选 字段总结
 
-**每个 TourSkill merchant-agent 必填**：
+**每个 Concourse merchant-agent 必填**：
 - `schemaVersion`、`name`、`description`、`url`、`version`
 - `skills[]`（≥ 1 个 skill）
 - `authentication.schemes[]`（≥ 1 个 scheme）
@@ -276,12 +276,12 @@ agent 验证 `ecrecover(requestHash, signature) == X-Agent-Address`，
 ## 8. 版本管理与演化
 
 - A2A `schemaVersion` 跟随上游 A2A spec。
-- TourSkill 扩展命名空间是 `tourskill.org/v1/*`。**破坏性变更升到
+- Concourse 扩展命名空间是 `tourskill.org/v1/*`。**破坏性变更升到
   `v2`**，v1 至少再支持 6 个月。
 - `version`（顶层，semver）是 merchant-agent 自己的软件版本 —— 对
   监控 + bug-triage 有用，但客户端不消费它（除了信息性显示）。
 
-TourSkill ship 任意扩展的 v2 时，merchant-agent 模板会 dual-emit
+Concourse ship 任意扩展的 v2 时，merchant-agent 模板会 dual-emit
 两个版本。**平台托管的商家自动升级；自托管的按自己节奏更新**。
 
 ---

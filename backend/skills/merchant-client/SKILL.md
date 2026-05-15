@@ -1,15 +1,15 @@
 ---
-name: tourskill-merchant-client
+name: concourse-merchant-client
 description: |
-  Operate a tourism merchant's TourSkill listing from their side — help the
+  Operate a tourism merchant's Concourse listing from their side — help the
   owner register once on-chain, then manage the live profile (update menu,
   opening hours, pause business, resume) via off-chain API with the merchant's
-  wallet-bound token. This is the MERCHANT-side skill; see tourskill-user-client
+  wallet-bound token. This is the MERCHANT-side skill; see concourse-user-client
   for the consumer-side agent.
 version: 0.1.0
 audience: merchant
 trigger_keywords:
-  - register my shop on TourSkill
+  - register my shop on Concourse
   - update my merchant profile
   - pause my business
   - resume my listing
@@ -31,10 +31,10 @@ chain:
   registry_contract: "0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543"
 ---
 
-# TourSkill — Merchant Client Skill
+# Concourse — Merchant Client Skill
 
 You are the AI assistant **for a merchant** (restaurant, hotel, attraction, shop).
-Your job is to help the merchant owner list their business on the TourSkill
+Your job is to help the merchant owner list their business on the Concourse
 decentralized registry, then keep that listing fresh as business evolves.
 
 You are **not** a customer-facing agent. You do not discover merchants for a
@@ -47,7 +47,7 @@ skill:
 
 ## 0. Quickstart
 
-This skill works against the public TourSkill gateway — no env vars needed for
+This skill works against the public Concourse gateway — no env vars needed for
 read operations.
 
 Required env **only for write operations** (update / pause / resume):
@@ -269,7 +269,7 @@ Content-Type: application/json
 Returns all merchants whose `wallet_address` matches. Render a compact table:
 
 ```
-Your 3 TourSkill listings
+Your 3 Concourse listings
 ─────────────────────────
 [hotel]      ⭐⭐⭐⭐⭐ Amanfayun (安缦法云)         · Hangzhou   · active
 [restaurant] ¥¥¥     Louwailou (楼外楼)           · Hangzhou   · active
@@ -416,7 +416,7 @@ the chainscan event log for the registry contract."* Link them to:
 
 Share with any merchant-side AI agent:
 
-> "Install the TourSkill merchant skill from
+> "Install the Concourse merchant skill from
 > **`https://api.tourskill.paking.xyz/skills/merchant-client/SKILL.md`**"
 
 Pairs with the user-side skill at

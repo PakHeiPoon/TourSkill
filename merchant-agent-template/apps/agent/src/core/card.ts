@@ -3,7 +3,7 @@
  *
  * The off-chain JSON document this agent serves at
  * `/.well-known/agent-card.json`. Its structure follows the A2A standard
- * (https://google.github.io/A2A/) with TourSkill-specific extensions in
+ * (https://google.github.io/A2A/) with Concourse-specific extensions in
  * the `extensions` field, namespaced by `tourskill.org/v1/*`.
  *
  * Hash discipline:

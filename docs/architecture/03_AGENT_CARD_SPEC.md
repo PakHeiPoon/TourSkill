@@ -4,7 +4,7 @@
 >
 > Standard: A2A *Agent Card* (Google A2A protocol). We adopt the upstream
 > JSON schema verbatim and use the spec's `extensions` field for
-> TourSkill-specific fields. The full spec is at
+> Concourse-specific fields. The full spec is at
 > `https://google.github.io/A2A/`. This doc summarizes what every
 > merchant-agent in our network MUST serve.
 
@@ -18,7 +18,7 @@ capabilities it supports.
 
 ## 1. Hosting requirements
 
-Every TourSkill merchant-agent MUST:
+Every Concourse merchant-agent MUST:
 
 - Serve the agent-card at the canonical path `/.well-known/agent-card.json`.
 - Return `application/json` with `Cache-Control: public, max-age=300` (5 min).
@@ -42,7 +42,7 @@ failure, not a warning.
   "schemaVersion": "1.0",                  // A2A schema version
   "name": "Wuming Chu Huangshan Hidden Retreat",
   "description": "28-room boutique hideaway in Huangshan ...",
-  "url": "https://wumingchu.tourskill.example",  // base URL of this agent
+  "url": "https://wumingchu.concourse.example",  // base URL of this agent
   "version": "0.3.2",                       // merchant-agent's own semver
 
   // Skills exposed by this agent
@@ -83,7 +83,7 @@ failure, not a warning.
   // What human-readable interfaces we serve (mostly informational)
   "interfaces": ["application/json"],
 
-  // TourSkill-specific extensions — namespaced
+  // Concourse-specific extensions — namespaced
   "extensions": {
     "tourskill.org/v1/payment":      { ... },
     "tourskill.org/v1/cancellation": { ... },
@@ -132,14 +132,14 @@ Two schemes are supported, declared in `authentication.schemes[]`:
 
 ### 4.1 `bearer`
 
-Standard bearer token from a successful TourSkill auth flow.
+Standard bearer token from a successful Concourse auth flow.
 
 ```
 Authorization: Bearer <token>
 ```
 
 The token is minted via the merchant-agent's `/auth/challenge` →
-`/auth/verify` flow (mirrors our existing TourSkill auth, so the same
+`/auth/verify` flow (mirrors our existing Concourse auth, so the same
 EIP-191 challenge-response works).
 
 ### 4.2 `eip191`
@@ -161,9 +161,9 @@ and that the nonce isn't replayed.
 
 ---
 
-## 5. TourSkill extensions (versioned)
+## 5. Concourse extensions (versioned)
 
-All TourSkill-specific fields live under `extensions["tourskill.org/v1/*"]`.
+All Concourse-specific fields live under `extensions["tourskill.org/v1/*"]`.
 Versioning the namespace lets us evolve the schema without breaking old
 clients.
 
@@ -264,7 +264,7 @@ the convenient shape.
 
 ## 7. Required vs optional fields summary
 
-**Required for every TourSkill merchant-agent:**
+**Required for every Concourse merchant-agent:**
 - `schemaVersion`, `name`, `description`, `url`, `version`
 - `skills[]` (≥1 skill)
 - `authentication.schemes[]` (≥1 scheme)
@@ -283,13 +283,13 @@ the convenient shape.
 ## 8. Versioning & evolution
 
 - The A2A `schemaVersion` follows upstream A2A spec.
-- TourSkill extension namespace is `tourskill.org/v1/*`. Breaking changes
+- Concourse extension namespace is `tourskill.org/v1/*`. Breaking changes
   bump to `v2`, and v1 stays supported for at least 6 months.
 - `version` (top-level, semver) is the merchant-agent's own software
   version — useful for monitoring + bug-triage but not consumed by
   clients except as informational.
 
-When TourSkill ships v2 of any extension, the merchant-agent template
+When Concourse ships v2 of any extension, the merchant-agent template
 will support both via dual-emit. Merchants on managed hosting get
 auto-upgraded; self-hosted merchants update at their pace.
 

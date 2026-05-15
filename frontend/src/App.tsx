@@ -55,7 +55,7 @@ function Layout() {
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('tourskill_wallet_address')
+    const saved = localStorage.getItem('concourse_wallet_address')
     if (saved) setWalletAddress(saved)
   }, [])
 
@@ -86,8 +86,8 @@ function Layout() {
       const signer = await provider.getSigner()
       const address = await signer.getAddress()
       setWalletAddress(address)
-      localStorage.setItem('tourskill_wallet_address', address)
-      window.dispatchEvent(new Event('tourskill:wallet-changed'))
+      localStorage.setItem('concourse_wallet_address', address)
+      window.dispatchEvent(new Event('concourse:wallet-changed'))
     } catch (error) {
       console.error(error)
       alert('Failed to connect wallet.')
@@ -97,8 +97,8 @@ function Layout() {
   const disconnectWallet = () => {
     setWalletAddress('')
     setMenuOpen(false)
-    localStorage.removeItem('tourskill_wallet_address')
-    window.dispatchEvent(new Event('tourskill:wallet-changed'))
+    localStorage.removeItem('concourse_wallet_address')
+    window.dispatchEvent(new Event('concourse:wallet-changed'))
   }
 
   return (
@@ -111,11 +111,11 @@ function Layout() {
               <Link to="/" className="flex items-center space-x-2 group">
                 <img
                   src="/tourskill-logo.png"
-                  alt="TourSkill logo"
+                  alt="Concourse logo"
                   className="w-10 h-10 rounded-xl object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className="text-xl font-bold tracking-tight text-text">
-                  TourSkill
+                  Concourse
                 </span>
               </Link>
 
@@ -205,7 +205,7 @@ function Layout() {
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.contract')}</a>
             <a href="https://api.tourskill.paking.xyz/skills/user-client/SKILL.md" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.skillMd')}</a>
-            <a href="https://github.com/PakHeiPoon/TourSkill" target="_blank" rel="noreferrer"
+            <a href="https://github.com/PakHeiPoon/Concourse" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.github')}</a>
           </div>
         </div>

@@ -99,7 +99,7 @@ create table if not exists agents (
   card_description   text,
   card_url           text,                          -- agent 的 base URL
   card_skills        jsonb,                         -- skill 列表，便于过滤
-  card_extensions    jsonb,                         -- TourSkill 扩展
+  card_extensions    jsonb,                         -- Concourse 扩展
   card_fetch_error   text                           -- 上次拉取错误（如有）
 );
 
@@ -157,7 +157,7 @@ update merchants set legacy_seed = true;  -- 把现有 28 全标 legacy
 legacy 合约在公链上。**任何人盯着都看到"冻结"状态**。我们沟通
 deprecation：
 
-1. README.md 顶部 banner："TourSkill 正在迁移到 Base 上的 ERC-8004。0G 上的 legacy 合约自 <日期> deprecated。新地址：<addr>。"
+1. README.md 顶部 banner："Concourse 正在迁移到 Base 上的 ERC-8004。0G 上的 legacy 合约自 <日期> deprecated。新地址：<addr>。"
 2. legacy 合约在 chainscan-galileo 上的合约说明更新（`MerchantRegistry — DEPRECATED — see Base Sepolia ERC-8004 IdentityRegistry at <addr>`）。
 3. 引用 legacy 合约地址的前端页切到新 ERC-8004 IdentityRegistry 地址。
 4. 28 个假商家从公开 Explorer 消失（**因为索引器不再读它们**）；Explorer 在真实商家上线前是空的。
@@ -171,7 +171,7 @@ deprecation：
 | 页面 | 现在 | 迁移后 |
 |---|---|---|
 | `/`（Home）| 用 Supabase 28 商家计数 | 从 `agents` 表读计数；数字会很低；**OK** |
-| `/explorer` | 28 mock 的分页列表 | 从 `agents` 表的分页列表；可能空 / 少；渲染"成为 TourSkill 上第一批商家"空状态 |
+| `/explorer` | 28 mock 的分页列表 | 从 `agents` 表的分页列表；可能空 / 少；渲染"成为 Concourse 上第一批商家"空状态 |
 | `/merchant/:id` | 从 Supabase merchants 读 | 从 `agents` 表按 agent_id 读 |
 | `/merchant/sign/:draftId` | 调 legacy MerchantRegistry.register() | 调 IdentityRegistry.register(agentCardURI, agentCardHash) |
 | `/profile` | 列 owner 在 Supabase 的 merchants | 列 owner 在 agents 表的 agents |
@@ -313,7 +313,7 @@ user-agent 的 `invoke_merchant_skill` tool 实现变了；我们 ship 一个
 - ☑ 调 `create_booking` **真的锁真 USDC 到真 escrow**？
 - ☑ 评论**只能在 settled booking 之后**留？
 - ☑ 自托管商家**从外部看与平台托管 byte-identical**？
-- ☑ TourSkill 后端**从不持有 USDC，从不执行 skill**？
+- ☑ Concourse 后端**从不持有 USDC，从不执行 skill**？
 
 **如果有任何回答"否"，我们没真正迁移 —— 只是 ship 了不同的 demo**。
 **诚实自检是 merge 标准**。

@@ -2,7 +2,7 @@
 
 > 引用：[00_PRINCIPLES.zh.md](./00_PRINCIPLES.zh.md)、[01_TARGET_ARCHITECTURE.zh.md](./01_TARGET_ARCHITECTURE.zh.md)。
 
-这份文档定义 TourSkill 怎么挣钱。商业模式形态对架构是**承重的**：
+这份文档定义 Concourse 怎么挣钱。商业模式形态对架构是**承重的**：
 它决定平台托管 runtime 要做什么、自托管用户免费拿到什么、我们永远
 不会收钱的边界在哪。
 
@@ -28,7 +28,7 @@
 | Postgres | postgresql.org | Supabase、Neon、Crunchy |
 | Next.js / React | 框架本身 | Vercel、Netlify |
 | Bitcoin / Ethereum | 链本身 | Coinbase、Alchemy、Infura |
-| **A2A / ERC-8004 / x402** | 协议本身 | **TourSkill（我们）** |
+| **A2A / ERC-8004 / x402** | 协议本身 | **Concourse（我们）** |
 
 这个模式经久不衰：开放标准赢采用率，便利产品赢收入。**我们故意站
 那一边**。
@@ -39,14 +39,14 @@
 
 | | 自托管 | 平台托管 |
 |---|---|---|
-| 谁跑 merchant-agent 进程 | 商家 | TourSkill |
+| 谁跑 merchant-agent 进程 | 商家 | Concourse |
 | 托管成本 | 商家付云账单（~$5-50/月 Vercel/Render/Fly）| 包在订阅里 |
 | 钱包私钥托管 | 商家 | 商家*（我们从不托管）* |
-| 库存数据位置 | 商家自己的 DB | TourSkill 多租户 Postgres，按 tenant 隔离 |
+| 库存数据位置 | 商家自己的 DB | Concourse 多租户 Postgres，按 tenant 隔离 |
 | 升级 / 安全补丁 | 商家自己跑 `git pull` | 我们自动推 |
 | 外部 API 接口 | 完全相同 | 完全相同 |
 | ERC-8004 注册 | 同一流程 | 同一流程 |
-| 商家付给 TourSkill | $0 | 订阅（见下） |
+| 商家付给 Concourse | $0 | 订阅（见下） |
 
 **这条架构规则对两边都是杀手锏**：商家可以从平台托管开始，长大后
 转自托管，**他们的客户（user-agent）完全察觉不到**。因为 agent-card
@@ -66,7 +66,7 @@ URL 只是一个域名，DNS 让它可携带。
 - 1 个门店
 - 每月 ≤ 100 笔 settled booking
 - 默认 skill 集（无自定义 skill）
-- TourSkill 子域名（`<slug>.merchants.tourskill.paking.xyz`）
+- Concourse 子域名（`<slug>.merchants.tourskill.paking.xyz`）
 - 仅社区支持
 
 **为什么免费**：独立宿主、单门店 B&B、"参加黑客松"用例。**网络效应的发现表面**。我们承担成本；网络效应是回报。
@@ -108,8 +108,8 @@ URL 只是一个域名，DNS 让它可携带。
 
 - **协议本身**。ERC-8004 合约公开；agent-card.json spec 开放；merchant-agent 模板 MIT 协议；SKILL.md 公开服务。
 - **自托管**。商家随时可以跳出我们的托管自己跑。**永远不会**用 feature flag 或"premium-only 协议扩展"卡这一条。
-- **通过 TourSkill registry indexer 发现**。自托管和平台托管商家在 `/v1/discover` 结果中**一视同仁**。
-- **用户侧 agent 安装**。终端用户（和他们的 user-agent）**永远不付 TourSkill 一分钱**。他们通过 x402 直接付给商家。
+- **通过 Concourse registry indexer 发现**。自托管和平台托管商家在 `/v1/discover` 结果中**一视同仁**。
+- **用户侧 agent 安装**。终端用户（和他们的 user-agent）**永远不付 Concourse 一分钱**。他们通过 x402 直接付给商家。
 - **从我们平台迁出**。Tier 2 商家想离开，**一键导出**库存 + agent-card。我们帮他完成 DNS 切换。
 
 **这是架构上的强制，不只是好心承诺** —— ERC-8004 registry 是我们不

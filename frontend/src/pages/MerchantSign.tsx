@@ -137,7 +137,7 @@ export default function MerchantSign() {
 
   // ─── Restore connected wallet from localStorage (same key as header) ───
   useEffect(() => {
-    const saved = localStorage.getItem('tourskill_wallet_address')
+    const saved = localStorage.getItem('concourse_wallet_address')
     if (saved) setWallet(saved)
   }, [])
 
@@ -153,8 +153,8 @@ export default function MerchantSign() {
       const signer = await provider.getSigner()
       const address = await signer.getAddress()
       setWallet(address)
-      localStorage.setItem('tourskill_wallet_address', address)
-      window.dispatchEvent(new Event('tourskill:wallet-changed'))
+      localStorage.setItem('concourse_wallet_address', address)
+      window.dispatchEvent(new Event('concourse:wallet-changed'))
     } catch (err) {
       console.error(err)
       setSignError(err instanceof Error ? err.message : 'Connect failed')

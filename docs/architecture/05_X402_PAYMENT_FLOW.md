@@ -7,7 +7,7 @@
 
 ---
 
-## Scope — what x402 IS and IS NOT, in TourSkill (read first)
+## Scope — what x402 IS and IS NOT, in Concourse (read first)
 
 **Earlier drafts of this document conflated two distinct problems.** This
 revision draws the boundary so future implementers don't repeat the
@@ -150,7 +150,7 @@ X-Payment-Required: 1
 
 {
   "version": "x402/1.0",
-  "method": "tourskill.escrow",          // payment method discriminator
+  "method": "concourse.escrow",          // payment method discriminator
   "amount": "3640000000",                 // amount in USDC base units (6 decimals)
   "currency": "USDC",
   "currencyAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",

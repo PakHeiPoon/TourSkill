@@ -29,7 +29,7 @@ export default function Home(): React.JSX.Element {
   const [agentKind, setAgentKind] = useState<AgentKind>('personal')
 
   const skillUrl = SKILL_URLS[agentKind]
-  const installPrompt = `Install the TourSkill skill from ${skillUrl}`
+  const installPrompt = `Install the Concourse skill from ${skillUrl}`
 
   const copyInstall = async (): Promise<void> => {
     try {
@@ -143,7 +143,7 @@ export default function Home(): React.JSX.Element {
 
         {/* Dark code block — high contrast on white card, terminal feel */}
         <pre className="bg-text rounded-lg p-4 text-sm font-mono leading-relaxed overflow-x-auto">
-          <code className="text-slate-300">Install the TourSkill skill from{'\n'}</code>
+          <code className="text-slate-300">Install the Concourse skill from{'\n'}</code>
           <a
             href={skillUrl}
             target="_blank"

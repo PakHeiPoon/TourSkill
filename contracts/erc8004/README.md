@@ -1,7 +1,7 @@
 # ERC-8004 Trustless Agent Registries
 
 Reference implementation of the ERC-8004 *Trustless Agent* triplet
-deployed by TourSkill on Base Sepolia (testnet) and eventually Base
+deployed by Concourse on Base Sepolia (testnet) and eventually Base
 mainnet.
 
 > Spec: [docs/architecture/02_ERC8004_CONTRACT_DESIGN.md](../../docs/architecture/02_ERC8004_CONTRACT_DESIGN.md)

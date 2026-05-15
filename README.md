@@ -1,13 +1,17 @@
 <p align="center">
-  <img src="docs/images/tourskill-banner.svg" alt="TourSkill Banner" width="800" />
+  <img src="docs/images/tourskill-banner.svg" alt="Concourse Banner" width="800" />
 </p>
 
 <p align="center">
-  <img src="docs/images/tourskill-logo.png" alt="TourSkill Logo" width="140" />
+  <img src="docs/images/tourskill-logo.png" alt="Concourse Logo" width="140" />
 </p>
 
 <p align="center">
-  <strong>Breaking the OTA Monopoly — Agent-to-Agent Tourism, Powered by You</strong>
+  <strong>Concourse — the open protocol layer where AI agents discover, verify, and transact directly. Agent-to-Agent. Peer-to-Peer.</strong>
+</p>
+
+<p align="center">
+  <em>Built on ERC-8004 Trustless Agents · A2A Agent Card · x402 micropayments. Tourism is the first vertical that proves the protocol; commerce of every kind follows.</em>
 </p>
 
 <p align="center">
@@ -18,9 +22,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/stars/PakHeiPoon/TourSkill?style=social" alt="Stars" />
-  <img src="https://img.shields.io/github/forks/PakHeiPoon/TourSkill?style=social" alt="Forks" />
-  <img src="https://img.shields.io/github/last-commit/PakHeiPoon/TourSkill" alt="Last Commit" />
+  <img src="https://img.shields.io/github/stars/PakHeiPoon/Concourse?style=social" alt="Stars" />
+  <img src="https://img.shields.io/github/forks/PakHeiPoon/Concourse?style=social" alt="Forks" />
+  <img src="https://img.shields.io/github/last-commit/PakHeiPoon/Concourse" alt="Last Commit" />
 </p>
 
 ---
@@ -58,13 +62,13 @@
 
 ### Tomorrow: Your Agent Talks to Their Agent
 
-Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transactions without a trusted third party* — TourSkill applies the same principle to travel commerce:
+Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transactions without a trusted third party* — Concourse applies the same principle to travel commerce:
 
 <p align="center">
-  <img src="docs/images/tourskill-a2a-ecosystem.png" alt="TourSkill Agent-to-Agent (A2A) travel ecosystem" width="900" />
+  <img src="docs/images/tourskill-a2a-ecosystem.png" alt="Concourse Agent-to-Agent (A2A) travel ecosystem" width="900" />
 </p>
 
-**TourSkill is the decentralized registry that makes this possible** — an open, verifiable "Yellow Pages" where merchants publish their skills (menus, availability, booking) and any AI agent can discover and interact with them directly.
+**Concourse is the decentralized registry that makes this possible** — an open, verifiable "Yellow Pages" where merchants publish their skills (menus, availability, booking) and any AI agent can discover and interact with them directly.
 
 ### The Journey: From Platform Dependency to Agent Freedom
 
@@ -80,7 +84,7 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
 ### User Flow
 
 <p align="center">
-  <img src="docs/images/tourskill-feature-flow.png" alt="TourSkill feature flow: personalized AI dining" width="900" />
+  <img src="docs/images/tourskill-feature-flow.png" alt="Concourse feature flow: personalized AI dining" width="900" />
 </p>
 
 ---
@@ -88,7 +92,7 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
 ## Architecture
 
 <p align="center">
-  <img src="docs/images/tourskill-infographic.png" alt="TourSkill Architecture Infographic" width="800" />
+  <img src="docs/images/tourskill-infographic.png" alt="Concourse Architecture Infographic" width="800" />
 </p>
 
 <details>
@@ -128,7 +132,7 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
 
 ### Merchant Skill System
 
-TourSkill merchants publish **executable skills** — not just static listings. Any AI agent can invoke these:
+Concourse merchants publish **executable skills** — not just static listings. Any AI agent can invoke these:
 
 | Category | Skills | Description |
 |----------|--------|-------------|
@@ -165,8 +169,8 @@ TourSkill merchants publish **executable skills** — not just static listings. 
 ### 1. Clone
 
 ```bash
-git clone https://github.com/PakHeiPoon/TourSkill.git
-cd TourSkill
+git clone https://github.com/PakHeiPoon/Concourse.git
+cd Concourse
 ```
 
 ### 2. Backend (MCP Gateway)
@@ -202,15 +206,15 @@ npx hardhat run scripts/deploy.js --network zerog_testnet
 
 ## Agent Integration via SKILL.md
 
-TourSkill ships with a **client-side SKILL.md spec** that any AI agent (Claude Code, Cursor, custom agents) can install to discover and interact with the on-chain merchant registry.
+Concourse ships with a **client-side SKILL.md spec** that any AI agent (Claude Code, Cursor, custom agents) can install to discover and interact with the on-chain merchant registry.
 
 ### Quick install
 
 Tell your personal agent:
 
-> "Install the TourSkill skill from `https://api.tourskill.paking.xyz/skills/user-client/SKILL.md`"
+> "Install the Concourse skill from `https://api.tourskill.paking.xyz/skills/user-client/SKILL.md`"
 
-The SKILL.md is served directly by the public TourSkill gateway — same host as the API it describes. No GitHub access needed.
+The SKILL.md is served directly by the public Concourse gateway — same host as the API it describes. No GitHub access needed.
 
 Once installed, the agent learns to:
 
@@ -226,7 +230,7 @@ See [`skills/user-client/SKILL.md`](skills/user-client/SKILL.md) for the full sp
 ## Project Structure
 
 ```
-TourSkill/
+Concourse/
 ├── frontend/                    # React + Vite + Tailwind
 │   ├── src/pages/
 │   │   ├── RegistrationPortal.tsx    # Merchant onboarding
@@ -284,7 +288,7 @@ Any client can verify: `cast call --rpc-url https://sepolia.base.org 0xBdE5A55D5
 | **Phase B-mcp — MCP route** | 🟡 Building | Add MCP server endpoint alongside REST skills — Claude Desktop / GPT can use merchants as native tools |
 | **Phase C-1 — Frontend rewire** | 🟡 Building | Retire legacy 0G demo, MerchantSign writes to Base IdentityRegistry via MetaMask |
 | **Phase C-2 — x402 paid skills** | 📋 Planned | Stateless per-call USDC payments (EIP-3009), standard Coinbase x402 — separate from booking-level escrow |
-| **Phase C-3 — `@tourskill/cli`** | 📋 Planned | Independent npm CLI: `tourskill list`, `tourskill show 1`, `tourskill call <id> <skill>` |
+| **Phase C-3 — `@concourse/cli`** | 📋 Planned | Independent npm CLI: `concourse list`, `concourse show 1`, `concourse call <id> <skill>` |
 | **Phase D — BookingEscrow + reputation** | 📋 Planned | EIP-712 Seaport-style escrow with time-locked release; settled bookings auto-authorize feedback in ReputationRegistry |
 | **Phase E — Multi-tenant SaaS** | 📋 Planned | Platform-hosted runtime so 95% of merchants get zero-ops onboarding; free tier + paid tiers |
 
@@ -295,11 +299,11 @@ See [`docs/architecture/07_MIGRATION_PLAN.md`](./docs/architecture/07_MIGRATION_
 ## Star History
 
 <div align="center">
-  <a href="https://star-history.com/#PakHeiPoon/TourSkill&Date">
+  <a href="https://star-history.com/#PakHeiPoon/Concourse&Date">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/TourSkill&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/TourSkill&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PakHeiPoon/TourSkill&type=Date" width="700" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/Concourse&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/Concourse&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PakHeiPoon/Concourse&type=Date" width="700" />
     </picture>
   </a>
 </div>
@@ -313,5 +317,5 @@ MIT
 ---
 
 <p align="center">
-  <sub>TourSkill — Because your next trip should be between you and the merchant, not you and a platform.</sub>
+  <sub>Concourse — Because your next trip should be between you and the merchant, not you and a platform.</sub>
 </p>

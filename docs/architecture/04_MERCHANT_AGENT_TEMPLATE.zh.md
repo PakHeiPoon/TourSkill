@@ -2,7 +2,7 @@
 
 > 引用：[00_PRINCIPLES.zh.md](./00_PRINCIPLES.zh.md)、[01_TARGET_ARCHITECTURE.zh.md](./01_TARGET_ARCHITECTURE.zh.md)、[03_AGENT_CARD_SPEC.zh.md](./03_AGENT_CARD_SPEC.zh.md)。
 
-每个商家用的开源 TypeScript 模板（自托管），或者 TourSkill 多租户跑
+每个商家用的开源 TypeScript 模板（自托管），或者 Concourse 多租户跑
 （平台托管）。**同一份代码，两种部署模式**。两种模式的外部接口**逐
 字节相同** —— 原则 6。
 
@@ -47,13 +47,13 @@ merchant-agent-template/
 │       ├── package.json
 │       └── tsconfig.json
 ├── packages/
-│   ├── shared-types/              # 与 TourSkill 后端共享的类型
+│   ├── shared-types/              # 与 Concourse 后端共享的类型
 │   └── eslint-config/
 ├── examples/
 │   ├── self-hosted-vercel/        # 一键部署模板
 │   ├── self-hosted-fly/
 │   ├── self-hosted-docker/
-│   └── platform-tenant/           # TourSkill 多租户 runtime 用
+│   └── platform-tenant/           # Concourse 多租户 runtime 用
 ├── docs/
 │   ├── DEPLOY.md                  # 各平台快速开始
 │   ├── CUSTOMIZE.md               # 如何添加自定义 skill
@@ -240,7 +240,7 @@ export default defineSkill({
 
 `sync-card` 脚本读本地 agent-card，计算哈希，写一个 tx 调
 `IdentityRegistry.update(agentId, uri, newHash)`。**商家用自己的
-钱包签一次（自己的 MetaMask、硬件钱包等）—— TourSkill 永远不碰他们
+钱包签一次（自己的 MetaMask、硬件钱包等）—— Concourse 永远不碰他们
 的私钥**。
 
 ---
@@ -278,7 +278,7 @@ USDC_ADDRESS=0x036CbD53...                  # Base Sepolia USDC
 PAYOUT_ADDRESS=0xMERCHANT_PAYOUT...
 
 # 可选 —— 仅多租户 runtime
-TENANT_ID=                                  # 跑在 TourSkill 平台时设置
+TENANT_ID=                                  # 跑在 Concourse 平台时设置
 ```
 
 ---
@@ -288,13 +288,13 @@ TENANT_ID=                                  # 跑在 TourSkill 平台时设置
 `TENANT_ID` 设置后，agent 跑在多租户模式：
 
 - 所有 store 查询按 `tenantId` 限定（Postgres 行级过滤或 schema-per-tenant；v1 = 行级过滤求简）
-- `/admin/*` 路由要求 TourSkill 签发的 JWT 标识 tenant + 授权动作
+- `/admin/*` 路由要求 Concourse 签发的 JWT 标识 tenant + 授权动作
 - agent-card URL 是 `https://api.tourskill.paking.xyz/agents/<slug>/.well-known/agent-card.json`，而不是自定义域名（自定义域名是 Tier 2+ 特性）
 - 一个 tenant 的出站 HTTP 不能到达另一个 tenant 的存储 —— 由 Postgres RLS 强制
 
 **商家从平台 → 自托管的迁移做这些**：
 1. 在我们的 admin UI 点"导出" → 下载 SQLite dump + .env starter
-2. `git clone tourskill/merchant-agent-template`
+2. `git clone concourse/merchant-agent-template`
 3. 把 SQLite 文件丢到 `apps/agent/data/agent.db`，复制 .env 值
 4. 部署到他们偏好的平台
 5. 给自定义域名更新 DNS
@@ -344,7 +344,7 @@ TENANT_ID=                                  # 跑在 TourSkill 平台时设置
 
 ```bash
 # 1. fork 模板仓库
-gh repo fork tourskill/merchant-agent-template --clone
+gh repo fork concourse/merchant-agent-template --clone
 
 # 2. 配置
 cp apps/agent/.env.example apps/agent/.env

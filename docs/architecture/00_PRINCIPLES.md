@@ -1,4 +1,4 @@
-# TourSkill Architecture Principles
+# Concourse Architecture Principles
 
 > *"做未来的产品，不贪图当下方便。"* — north star, 2026-04-29
 
@@ -65,7 +65,7 @@ of truth.** If our Supabase dies tomorrow, every merchant-agent still owns
 their full state, and the on-chain hash still proves their identity. Anyone
 can rebuild our indexer by replaying chain events.
 
-**Implication:** any TourSkill backend feature that depends on our central
+**Implication:** any Concourse backend feature that depends on our central
 DB to function (rather than just for performance) is a smell.
 
 ---
@@ -78,7 +78,7 @@ endpoint that owns its own data.
 Our current `skill_service.py` (with 12 fabricating handlers) is on the
 chopping block. After Phase A:
 
-- The TourSkill backend **does not execute merchant skills**.
+- The Concourse backend **does not execute merchant skills**.
 - It **discovers** (registry indexer), **authenticates** (challenge-response),
   and **routes** (turn an `agentURI` into an HTTP call). That's the whole job.
 - A skill call goes from user-agent → directly to merchant-agent — without
@@ -133,7 +133,7 @@ accident for *this* moment in the ecosystem. The principle is not "always
 two chains" — it's "right tool, right place, accept the operational cost
 when it's worth it."
 
-**Implication.** TourSkill doesn't try to push everything onto 0G to keep
+**Implication.** Concourse doesn't try to push everything onto 0G to keep
 the "0G project" story tidy. Our 0G use case is **inference + storage**,
 which is what 0G is actually best at. Identity and payment go where their
 ecosystems live.
@@ -147,7 +147,7 @@ Merchants come in two flavors:
 - **Self-hosted** — fork the `merchant-agent-template` repo, run it on their
   own infra, control their own keys, pay their own server bill. Maximum
   sovereignty, maximum technical bar.
-- **Platform-hosted** — TourSkill runs the agent for them, multi-tenant,
+- **Platform-hosted** — Concourse runs the agent for them, multi-tenant,
   paid as a SaaS subscription. Maximum convenience, requires trust in us.
 
 **The hard rule: from the outside, both look identical.**

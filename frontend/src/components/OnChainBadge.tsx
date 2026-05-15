@@ -20,7 +20,7 @@ function shortHex(s: string | null | undefined, head = 6, tail = 4): string {
 
 function shortDid(did: string | null | undefined): string {
   if (!did) return ''
-  // did:tourskill:merchant:fc41644bf15f → did:tourskill:merchant:fc41…
+  // did:concourse:merchant:fc41644bf15f → did:concourse:merchant:fc41…
   const parts = did.split(':')
   if (parts.length < 4) return did
   const last = parts[parts.length - 1]

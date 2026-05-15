@@ -1,8 +1,8 @@
 ---
-name: tourskill-user-client
+name: concourse-user-client
 description: |
   Discover and invoke tourism merchants (hotels, restaurants, attractions) on the
-  TourSkill decentralized A2A registry. Personalizes results with the user's profile
+  Concourse decentralized A2A registry. Personalizes results with the user's profile
   (preferences, allergens, history) and lets the agent reserve / book / purchase on
   the user's behalf — peer-to-peer, no OTA platform fees.
 version: 0.1.0
@@ -13,7 +13,7 @@ trigger_keywords:
   - 订房
   - 订餐
   - 找餐厅
-  - tourskill
+  - concourse
   - travel agent
 default_api_base: https://api.tourskill.paking.xyz   # public gateway — works out of the box
 optional_env:
@@ -32,10 +32,10 @@ chain:
   registry_contract: "0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543"
 ---
 
-# TourSkill — User Client Skill
+# Concourse — User Client Skill
 
 You (the agent) help your principal (the human user) interact directly with tourism
-merchants on the TourSkill decentralized registry. No platform middleman, no
+merchants on the Concourse decentralized registry. No platform middleman, no
 algorithmic ranking — you discover merchants on-chain, personalize results from
 the user's own context, and invoke executable skills (menu, booking, ticketing) via
 MCP-compatible HTTP calls.
@@ -44,7 +44,7 @@ MCP-compatible HTTP calls.
 
 ## 0. Quickstart — Zero Config (read this first)
 
-This skill works **out of the box** against the public TourSkill gateway at
+This skill works **out of the box** against the public Concourse gateway at
 `https://api.tourskill.paking.xyz`. No env vars required, no auth setup,
 no local backend to run. Just read the rest of this file and start using the
 endpoints in Section 2.
@@ -122,13 +122,13 @@ else:
 Walk the user through these steps **conversationally**.
 
 1. **Confirm wallet readiness.**
-   > "TourSkill uses 0G testnet for identity. Do you have a wallet (MetaMask, Rabby, etc.)
+   > "Concourse uses 0G testnet for identity. Do you have a wallet (MetaMask, Rabby, etc.)
    > with a small amount of 0G testnet tokens for gas? If not, grab some from
    > https://hub.0g.ai/faucet?network=testnet first."
 
 2. **Open the login page.**
    > "Open this link in your browser and click *Sign in with Wallet*:
-   > **`${TOURSKILL_CONSOLE_BASE:-https://app.tourskill.xyz}/login?source=agent`**
+   > **`${TOURSKILL_CONSOLE_BASE:-https://app.concourse.xyz}/login?source=agent`**
    >
    > Your wallet pops up to sign a message (no gas, just signature). After signing,
    > the page shows a **token** and your **wallet address** — paste both back to me."
@@ -216,7 +216,7 @@ Returns a list of merchants with `merchant_id` (DID), `name`, `description`,
 
 Re-rank the candidates using **your own knowledge of the user**. Pull from the
 host agent's own memory: past trips, food preferences, dietary restrictions,
-budget, work context, who they're traveling with. A TourSkill-native profile
+budget, work context, who they're traveling with. A Concourse-native profile
 endpoint (`GET /v1/auth/me`) is on the roadmap — until then, lean entirely on
 the host agent's memory.
 

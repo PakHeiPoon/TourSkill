@@ -3,7 +3,7 @@ pragma solidity 0.8.24;
 
 /// @title  IdentityRegistry — ERC-8004 Trustless Agent identity
 /// @notice Canonical "this address owns this agent" record. The single
-///         source of truth for who is registered on TourSkill.
+///         source of truth for who is registered on Concourse.
 /// @dev    Spec: docs/architecture/02_ERC8004_CONTRACT_DESIGN.md §2.
 ///
 ///         Storage discipline: only invariants live on chain. The mutable

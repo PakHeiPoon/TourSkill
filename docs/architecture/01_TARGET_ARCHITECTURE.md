@@ -18,7 +18,7 @@ the current system. It is what every decision in the next 6–8 weeks aims at.
                                          ▼
                 ┌─────────────────────────────────────────────────┐
                 │              USER AGENT (LLM brain)             │
-                │  Installed once via SKILL.md @ tourskill domain │
+                │  Installed once via SKILL.md @ concourse domain │
                 │  Runs anywhere: Claude Code, Cursor, ChatGPT,   │
                 │  custom — we don't host it                      │
                 └────┬───────────────────────────────────┬────────┘
@@ -121,7 +121,7 @@ Side channels (deliberately not in the critical path):
 
 ### 2.2 agent-card.json (off-chain, served by every merchant-agent)
 
-The bridge document. Format follows the A2A standard with TourSkill-specific extensions in the `extensions` field. Every merchant-agent MUST serve this at a stable canonical URL (typically `https://<merchant-host>/.well-known/agent-card.json`).
+The bridge document. Format follows the A2A standard with Concourse-specific extensions in the `extensions` field. Every merchant-agent MUST serve this at a stable canonical URL (typically `https://<merchant-host>/.well-known/agent-card.json`).
 
 Detailed schema → [03_AGENT_CARD_SPEC.md](./03_AGENT_CARD_SPEC.md).
 
@@ -133,7 +133,7 @@ Detailed schema → [03_AGENT_CARD_SPEC.md](./03_AGENT_CARD_SPEC.md).
 - **Storage**: SQLite (local dev) → Postgres (production); abstracted behind a `MerchantStore` interface so a merchant could swap in their own DB
 - **LLM client**: provider-agnostic; reads `LLM_PROVIDER` env var; defaults to OpenAI-compatible endpoints (works with 0G Compute, Qiniu, OpenAI, Anthropic-via-proxy)
 - **x402 middleware**: official `@coinbase/x402-hono` (or wrap `x402-fetch`)
-- **Auth**: incoming requests verified against either bearer-token-from-tourskill OR direct EIP-191 signature (when called by another agent in a P2P scenario)
+- **Auth**: incoming requests verified against either bearer-token-from-concourse OR direct EIP-191 signature (when called by another agent in a P2P scenario)
 
 Detailed spec → [04_MERCHANT_AGENT_TEMPLATE.md](./04_MERCHANT_AGENT_TEMPLATE.md).
 
@@ -143,7 +143,7 @@ Time-locked USDC escrow with dispute window. Triggered by user payments via x402
 
 Detailed spec → [05_X402_PAYMENT_FLOW.md](./05_X402_PAYMENT_FLOW.md).
 
-### 2.5 TourSkill backend (FastAPI on Vercel)
+### 2.5 Concourse backend (FastAPI on Vercel)
 
 After Phase A, the backend's job shrinks dramatically. It keeps:
 
@@ -214,8 +214,8 @@ Step 8 — Day after check-out + 24h dispute window passes
 ```
 
 Notice what's NOT in this flow:
-- TourSkill backend never executes a skill — it indexes and discovers only.
-- TourSkill backend never holds USDC — escrow is between user and merchant.
+- Concourse backend never executes a skill — it indexes and discovers only.
+- Concourse backend never holds USDC — escrow is between user and merchant.
 - The user-agent talks to the merchant-agent **directly** over HTTPS.
 
 ---
@@ -224,7 +224,7 @@ Notice what's NOT in this flow:
 
 | Actor | Trusted with | Not trusted with |
 |-------|--------------|-------------------|
-| TourSkill backend | indexing chain events; minting drafts; auth tokens | wallet keys; USDC custody; skill execution |
+| Concourse backend | indexing chain events; minting drafts; auth tokens | wallet keys; USDC custody; skill execution |
 | User-agent | reading user intent; planning tool calls; surfacing payments to human | signing without confirmation; storing wallet keys |
 | Merchant-agent | own inventory, own pricing rules, own LLM | other merchants' data |
 | Platform-hosted runtime | hosting the merchant-agent process | the merchant's wallet keys (the merchant signs registration themselves) |

@@ -151,15 +151,15 @@ export default function RegistrationPortal() {
       })
 
     const syncWallet = () => {
-      const saved = localStorage.getItem('tourskill_wallet_address')
+      const saved = localStorage.getItem('concourse_wallet_address')
       if (saved) {
         setForm((prev) => ({ ...prev, wallet_address: saved }))
       }
     }
     syncWallet()
-    window.addEventListener('tourskill:wallet-changed', syncWallet)
+    window.addEventListener('concourse:wallet-changed', syncWallet)
     return () => {
-      window.removeEventListener('tourskill:wallet-changed', syncWallet)
+      window.removeEventListener('concourse:wallet-changed', syncWallet)
     }
   }, [])
 

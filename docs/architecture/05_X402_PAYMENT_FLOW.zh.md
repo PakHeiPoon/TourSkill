@@ -103,7 +103,7 @@ X-Payment-Required: 1
 
 {
   "version": "x402/1.0",
-  "method": "tourskill.escrow",          // 支付方法判别符
+  "method": "concourse.escrow",          // 支付方法判别符
   "amount": "3640000000",                 // USDC base unit（6 位小数）
   "currency": "USDC",
   "currencyAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",

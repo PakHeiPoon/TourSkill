@@ -199,7 +199,7 @@ accept signed feedback messages from the authorized clients via
 
 - the server agent itself (preferred — content lives on the merchant's own
   storage)
-- a community indexer (TourSkill's, but anyone can run one)
+- a community indexer (Concourse's, but anyone can run one)
 
 Each feedback is a JSON blob with the user's signature over
 `{ serverAgentId, bookingTxHash, rating, body, timestamp }`. The signature

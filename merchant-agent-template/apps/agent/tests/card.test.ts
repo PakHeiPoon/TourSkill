@@ -55,7 +55,7 @@ describe('agent-card builder', () => {
     expect(card.provenance.chain).toBe('base-sepolia');
   });
 
-  it('embeds tourskill payment extension', () => {
+  it('embeds concourse payment extension', () => {
     const card = buildAgentCard({
       config: baseConfig, settings: baseSettings, skills, agentVersion: '0.1.0',
     });

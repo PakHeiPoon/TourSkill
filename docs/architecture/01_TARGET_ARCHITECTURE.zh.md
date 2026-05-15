@@ -17,7 +17,7 @@
                                          ▼
                 ┌─────────────────────────────────────────────────┐
                 │              USER AGENT (LLM 大脑)               │
-                │  通过 SKILL.md @ tourskill 域名一次性安装        │
+                │  通过 SKILL.md @ concourse 域名一次性安装        │
                 │  跑在哪都行：Claude Code / Cursor / ChatGPT /    │
                 │  自定义 —— 我们不托管它                          │
                 └────┬───────────────────────────────────┬────────┘
@@ -120,7 +120,7 @@
 
 ### 2.2 agent-card.json（链下，每个 merchant-agent 服务）
 
-桥接文档。格式遵循 A2A 标准，TourSkill 自定义字段在 `extensions` 字段下。每个 merchant-agent **必须**在稳定的规范 URL 上服务它（通常是 `https://<merchant-host>/.well-known/agent-card.json`）。
+桥接文档。格式遵循 A2A 标准，Concourse 自定义字段在 `extensions` 字段下。每个 merchant-agent **必须**在稳定的规范 URL 上服务它（通常是 `https://<merchant-host>/.well-known/agent-card.json`）。
 
 详细 schema → [03_AGENT_CARD_SPEC.zh.md](./03_AGENT_CARD_SPEC.zh.md)。
 
@@ -132,7 +132,7 @@
 - **存储**：SQLite（本地开发）→ Postgres（生产）；通过 `MerchantStore` 接口抽象，所以商家可以换成自己的 DB
 - **LLM 客户端**：provider 无关；读 `LLM_PROVIDER` 环境变量；默认 OpenAI 兼容（适用 0G Compute / Qiniu / OpenAI / Anthropic via proxy）
 - **x402 中间件**：官方 `@coinbase/x402-hono`（或包装 `x402-fetch`）
-- **认证**：incoming 请求要么 bearer-token-from-tourskill 验证，要么 直接 EIP-191 签名（点对点 agent 调用场景）
+- **认证**：incoming 请求要么 bearer-token-from-concourse 验证，要么 直接 EIP-191 签名（点对点 agent 调用场景）
 
 详细 spec → [04_MERCHANT_AGENT_TEMPLATE.zh.md](./04_MERCHANT_AGENT_TEMPLATE.zh.md)。
 
@@ -142,7 +142,7 @@
 
 详细 spec → [05_X402_PAYMENT_FLOW.zh.md](./05_X402_PAYMENT_FLOW.zh.md)。
 
-### 2.5 TourSkill 后端（FastAPI on Vercel）
+### 2.5 Concourse 后端（FastAPI on Vercel）
 
 Phase A 之后，后端的工作量大幅缩水。保留：
 
@@ -213,8 +213,8 @@ Step 8 —— 退房日 + 24 小时申诉窗口过去
 ```
 
 注意这条流里**没有什么**：
-- TourSkill 后端**从未**执行 skill —— 它只索引和发现。
-- TourSkill 后端**从未**持有 USDC —— escrow 在用户和商家之间。
+- Concourse 后端**从未**执行 skill —— 它只索引和发现。
+- Concourse 后端**从未**持有 USDC —— escrow 在用户和商家之间。
 - User-agent 与 merchant-agent **直接** HTTPS 通信。
 
 ---
@@ -223,7 +223,7 @@ Step 8 —— 退房日 + 24 小时申诉窗口过去
 
 | 角色 | 被信任的 | 不被信任的 |
 |------|---------|-----------|
-| TourSkill 后端 | 索引链事件、铸造 draft、auth token | 钱包私钥、USDC 托管、skill 执行 |
+| Concourse 后端 | 索引链事件、铸造 draft、auth token | 钱包私钥、USDC 托管、skill 执行 |
 | User-agent | 解读用户意图、规划 tool 调用、把支付浮给人类 | 未确认就签字、存私钥 |
 | Merchant-agent | 自己的库存、自己的定价规则、自己的 LLM | 其他商家的数据 |
 | 平台托管 runtime | 跑 merchant-agent 进程 | 商家钱包私钥（商家自己签 register） |

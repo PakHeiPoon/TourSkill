@@ -3,7 +3,7 @@
 > Reference: [00_PRINCIPLES.md](./00_PRINCIPLES.md), [01_TARGET_ARCHITECTURE.md](./01_TARGET_ARCHITECTURE.md), [03_AGENT_CARD_SPEC.md](./03_AGENT_CARD_SPEC.md).
 
 Open-source TypeScript template every merchant uses (self-hosted) or that
-TourSkill runs multi-tenant (platform-hosted). Same code, two deployment
+Concourse runs multi-tenant (platform-hosted). Same code, two deployment
 modes. The external surface is **byte-identical** between the two
 modes — Principle 6.
 
@@ -48,13 +48,13 @@ merchant-agent-template/
 │       ├── package.json
 │       └── tsconfig.json
 ├── packages/
-│   ├── shared-types/              # types shared with TourSkill backend
+│   ├── shared-types/              # types shared with Concourse backend
 │   └── eslint-config/
 ├── examples/
 │   ├── self-hosted-vercel/        # one-click deploy template
 │   ├── self-hosted-fly/
 │   ├── self-hosted-docker/
-│   └── platform-tenant/           # for TourSkill's multi-tenant runtime
+│   └── platform-tenant/           # for Concourse's multi-tenant runtime
 ├── docs/
 │   ├── DEPLOY.md                  # quickstart for each platform
 │   ├── CUSTOMIZE.md               # how to add a custom skill
@@ -191,7 +191,7 @@ restart, it shows up in agent-card.json. No manual registration.
 ### 3.4 x402 middleware integration
 
 > **Boundary** (revised — see [`05_X402_PAYMENT_FLOW.md` § Scope](./05_X402_PAYMENT_FLOW.md)):
-> x402 in TourSkill is for **stateless per-call micropayments only**
+> x402 in Concourse is for **stateless per-call micropayments only**
 > (paid metadata skills like `get_rates_premium`). It is **not** the
 > payment rail for `create_booking` — booking-level held funds use a
 > separate `BookingEscrow` instrument (Phase C, deferred).
@@ -253,7 +253,7 @@ proof to the handler context.
 The `sync-card` script reads the local agent-card, computes the hash, and
 writes a transaction to `IdentityRegistry.update(agentId, uri, newHash)`.
 The merchant signs once with their wallet (their own MetaMask, hardware
-wallet, etc.) — TourSkill never touches their key.
+wallet, etc.) — Concourse never touches their key.
 
 ---
 
@@ -290,7 +290,7 @@ USDC_ADDRESS=0x036CbD53...                  # Base Sepolia USDC
 PAYOUT_ADDRESS=0xMERCHANT_PAYOUT...
 
 # Optional — multi-tenant runtime only
-TENANT_ID=                                  # set when running on TourSkill platform
+TENANT_ID=                                  # set when running on Concourse platform
 ```
 
 ---
@@ -300,13 +300,13 @@ TENANT_ID=                                  # set when running on TourSkill plat
 When `TENANT_ID` is set, the agent runs in multi-tenant mode:
 
 - All store queries are scoped by `tenantId` (Postgres row-level filter or schema-per-tenant; v1 = row-level filter for simplicity)
-- The `/admin/*` routes require a TourSkill-issued JWT identifying the tenant + their authorized actions
+- The `/admin/*` routes require a Concourse-issued JWT identifying the tenant + their authorized actions
 - The agent-card URL is `https://api.tourskill.paking.xyz/agents/<slug>/.well-known/agent-card.json` instead of a custom domain (custom domain is a Tier 2+ feature)
 - Outbound HTTP from one tenant cannot reach another tenant's storage — enforced by Postgres RLS
 
 **A merchant migrating from platform → self-hosted does:**
 1. Click "Export" in our admin UI → downloads SQLite dump + .env starter
-2. `git clone tourskill/merchant-agent-template`
+2. `git clone concourse/merchant-agent-template`
 3. Drop SQLite file into `apps/agent/data/agent.db`, copy .env values
 4. Deploy to their preferred platform
 5. Update DNS for their custom domain
@@ -361,7 +361,7 @@ at `/admin/metrics` themselves. Lean.
 
 ```bash
 # 1. Fork the template repo
-gh repo fork tourskill/merchant-agent-template --clone
+gh repo fork concourse/merchant-agent-template --clone
 
 # 2. Configure
 cp apps/agent/.env.example apps/agent/.env

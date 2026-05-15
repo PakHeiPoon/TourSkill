@@ -34,7 +34,7 @@ filter 的链。
 
 ## Q2. 单全局索引器 vs 去中心化索引器？
 
-**问题**。该有**恰好一个** TourSkill 跑的索引器，还是**鼓励 / 要求
+**问题**。该有**恰好一个** Concourse 跑的索引器，还是**鼓励 / 要求
 多个独立索引器**做韧性？
 
 **取舍**。
@@ -47,7 +47,7 @@ filter 的链。
 人都能跑自己的（Node 服务开源）。**v2 真有需求时**（例如企业客户
 要私有索引器）再向多索引器移动。
 
-**何时重审**：TourSkill 的索引器 down 超过 1 天，或生态合作伙伴要
+**何时重审**：Concourse 的索引器 down 超过 1 天，或生态合作伙伴要
 data feed。
 
 ---
@@ -153,7 +153,7 @@ agent 的 discover 查询能按必须 skill 过滤
 
 ## Q8. 争议仲裁 —— v1 谁来？
 
-**问题**。[05_X402_PAYMENT_FLOW.zh.md](./05_X402_PAYMENT_FLOW.zh.md) §3 说 v1 我们（TourSkill）是仲裁者。
+**问题**。[05_X402_PAYMENT_FLOW.zh.md](./05_X402_PAYMENT_FLOW.zh.md) §3 说 v1 我们（Concourse）是仲裁者。
 **怎么搭这个？**
 
 **取舍**。
@@ -191,7 +191,7 @@ Supabase 定价痛苦。
 
 ## Q10. 多租户 agent runtime —— 隔离多强？
 
-**问题**。TourSkill 平台托管 merchant-agent 时，租户隔离多强？同
+**问题**。Concourse 平台托管 merchant-agent 时，租户隔离多强？同
 Hono 进程加 Postgres 行级过滤？每租户独立进程？每租户独立 VM？
 
 **取舍**。
@@ -273,7 +273,7 @@ Cloudflare Workers permission 模型改进。
 ## Q14. 地理覆盖：仅链上 还是 法币 ramp 的 KYC？
 
 **问题**。最终我们想要法币入金通道（Visa → USDC → escrow）触达非
-crypto 原生客户。**这把我们拉进 KYC / AML 领域，破坏"TourSkill 永
+crypto 原生客户。**这把我们拉进 KYC / AML 领域，破坏"Concourse 永
 不托管"吗？**
 
 **取舍**。

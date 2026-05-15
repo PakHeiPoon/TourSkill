@@ -1,0 +1,36 @@
+{
+  "merchant_type": "hotel",
+  "name": "Wuming Chu · Huangshan Hidden Retreat",
+  "description": "藏于黄山云谷腹地的隐世精品酒店，由当地百年徽派古宅修缮而成，仅设 28 间客房，环抱在松涛、云海与温泉之间。原木+夯土+青瓦的建筑语言尊重山林本色，每间客房均设私人观山阳台，部分房型直通独立汤池。距黄山云谷索道 5 分钟车程，凌晨可乘酒店专车上山观日出云海。设私厨制安徽山珍宴，茶室提供祁门红茶与黄山毛峰品鉴。\n\nA 28-room boutique hideaway nestled in the cloud-shrouded valleys of Huangshan, restored from a century-old Hui-style courtyard estate. Timber, rammed-earth and dark-tile architecture honours the mountain. Every room opens to a private mountain-view balcony; select rooms have direct access to spring-fed soaking tubs. Five minutes from Yungu cable car; pre-dawn shuttle for sunrise-and-sea-of-clouds tours. Private chef serving foraged Anhui mountain cuisine; tea room features Keemun and Maofeng tastings.",
+  "city": "huangshan",
+  "country": "CN",
+  "address": "安徽省黄山市黄山风景区云谷寺路侧（毗邻云谷索道下站）",
+  "latitude": 30.1372,
+  "longitude": 118.1856,
+  "contact_phone": "+86 559 558 6688",
+  "contact_email": "stay@wumingchu.com",
+  "opening_hours": "24/7",
+  "website_url": "https://wumingchu.com",
+  "price_level": 5,
+  "tags": ["boutique", "retreat", "mountain", "huizhou-architecture", "hot-spring", "sunrise-view", "tea-culture"],
+  "languages_supported": ["zh", "en"],
+  "supported_skills": [
+    "check_availability",
+    "get_rates",
+    "create_booking",
+    "get_cancellation_policy"
+  ],
+  "specific_fields": {
+    "star_rating": 5,
+    "room_types": [
+      "云栖山景房 (Mountain View Room)",
+      "松隐露台房 (Pine Terrace Room)",
+      "汤池院子房 (Spring Pool Courtyard Room)",
+      "无名套房 (Wuming Suite)"
+    ],
+    "check_in_time": "15:00",
+    "check_out_time": "12:00",
+    "breakfast_included": true,
+    "parking_available": true
+  }
+}

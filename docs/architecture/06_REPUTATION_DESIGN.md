@@ -3,7 +3,7 @@
 > Reference: [00_PRINCIPLES.md](./00_PRINCIPLES.md), [02_ERC8004_CONTRACT_DESIGN.md](./02_ERC8004_CONTRACT_DESIGN.md), [05_X402_PAYMENT_FLOW.md](./05_X402_PAYMENT_FLOW.md).
 
 The single hardest thing about an open registry is preventing review fraud.
-This doc specifies how TourSkill makes review fraud expensive.
+This doc specifies how Concourse makes review fraud expensive.
 
 ---
 
@@ -74,7 +74,7 @@ indexed by anyone.
 
 ```jsonc
 {
-  "schemaVersion": "tourskill.org/feedback/v1",
+  "schemaVersion": "concourse.org/feedback/v1",
   "merchantAgentId": 42,
   "bookingTxHash": "0xPAY...",        // BookingEscrow.lock tx
   "settlementTxHash": "0xRELEASE...",  // BookingEscrow.release tx (proves settled)
@@ -102,7 +102,7 @@ Three places feedback can live, all valid:
    `GET /reputation/feedback?since=...`. They serve their own reviews.
    Conflict of interest? Yes, but mitigated by indexers (see #3) cross-
    referencing.
-2. **TourSkill's central indexer** — `GET /v1/reputation/feedback?merchantAgentId=...`. The indexer publishes everything it sees. Anyone can run their own.
+2. **Concourse's central indexer** — `GET /v1/reputation/feedback?merchantAgentId=...`. The indexer publishes everything it sees. Anyone can run their own.
 3. **IPFS / Arweave** — for permanence. Optional; merchants on Tier 2+
    can opt to mirror their feedback there.
 

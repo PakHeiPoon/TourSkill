@@ -65,7 +65,7 @@ interface ComputeState {
 // can still point at a local backend.
 const MCP_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
-export const SYSTEM_PROMPT = `You are a helpful AI travel assistant powered by the TourSkill decentralized registry on the 0G Network.
+export const SYSTEM_PROMPT = `You are a helpful AI travel assistant powered by the Concourse decentralized registry on the 0G Network.
 
 You help users discover tourism merchants (hotels, restaurants, attractions) and interact with their on-chain skills.
 
@@ -74,7 +74,7 @@ You have access to tools to:
 2. invoke_merchant_skill — call a merchant's skill API (get_menu, check_availability, reserve_table, etc.)
 3. get_merchant_details — get full merchant profile
 
-CRITICAL: When calling invoke_merchant_skill, use the "merchant_id" field from discovery results as the "did" parameter (e.g. "merchant:968e07fdafc1"). Do NOT use the "did" field (e.g. "did:tourskill:merchant:...") — it will fail.
+CRITICAL: When calling invoke_merchant_skill, use the "merchant_id" field from discovery results as the "did" parameter (e.g. "merchant:968e07fdafc1"). Do NOT use the "did" field (e.g. "did:concourse:merchant:...") — it will fail.
 
 When a user asks about dining, hotels, or attractions in a city:
 1. First use discover_merchants to find relevant merchants
@@ -91,7 +91,7 @@ export const TOOL_DEFINITIONS = [
     type: 'function' as const,
     function: {
       name: 'discover_merchants',
-      description: 'Search the TourSkill decentralized registry for tourism merchants by city, type, or keyword.',
+      description: 'Search the Concourse decentralized registry for tourism merchants by city, type, or keyword.',
       parameters: {
         type: 'object',
         properties: {

@@ -2,7 +2,7 @@
 
 > 引用：[00_PRINCIPLES.zh.md](./00_PRINCIPLES.zh.md)、[02_ERC8004_CONTRACT_DESIGN.zh.md](./02_ERC8004_CONTRACT_DESIGN.zh.md)、[05_X402_PAYMENT_FLOW.zh.md](./05_X402_PAYMENT_FLOW.zh.md)。
 
-开放注册表里**最难**的一件事是**防止刷评论**。本文档规定 TourSkill
+开放注册表里**最难**的一件事是**防止刷评论**。本文档规定 Concourse
 **怎么让评论造假变贵**。
 
 ---
@@ -67,7 +67,7 @@ BookingEscrow.release(intentId)
 
 ```jsonc
 {
-  "schemaVersion": "tourskill.org/feedback/v1",
+  "schemaVersion": "concourse.org/feedback/v1",
   "merchantAgentId": 42,
   "bookingTxHash": "0xPAY...",        // BookingEscrow.lock tx
   "settlementTxHash": "0xRELEASE...",  // BookingEscrow.release tx（证明已结算）
@@ -93,7 +93,7 @@ BookingEscrow.release(intentId)
 1. **merchant-agent 自己的存储** —— 商家暴露
    `GET /reputation/feedback?since=...`。**他们 serve 自己的评论**。
    利益冲突？是，但通过索引器（#3）交叉引用缓解。
-2. **TourSkill 中央索引器** —— `GET /v1/reputation/feedback?merchantAgentId=...`。**索引器发布它看到的一切**。**任何人都能跑自己的索引器**。
+2. **Concourse 中央索引器** —— `GET /v1/reputation/feedback?merchantAgentId=...`。**索引器发布它看到的一切**。**任何人都能跑自己的索引器**。
 3. **IPFS / Arweave** —— 永久存档。可选；Tier 2+ 商家可以选择镜像
    到那里。
 

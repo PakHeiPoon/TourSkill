@@ -15,7 +15,7 @@
  *
  * No private keys. No wallet. No backend. Just chain + HTTP.
  * This is what any AI agent (Claude / GPT / your own LLM) will do
- * when shopping on TourSkill.
+ * when shopping on Concourse.
  */
 
 import { createPublicClient, http, parseAbi } from 'viem';
@@ -123,7 +123,7 @@ async function callSkill<T>(
 // ─── Main ───────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  console.log(c.bold('\n🔍 Discovering TourSkill agents on Base Sepolia'));
+  console.log(c.bold('\n🔍 Discovering Concourse agents on Base Sepolia'));
   console.log(c.dim(`   IdentityRegistry  ${IDENTITY_REGISTRY}`));
   console.log(c.dim(`   RPC               ${RPC}`));
 

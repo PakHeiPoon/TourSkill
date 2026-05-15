@@ -190,7 +190,7 @@ event FeedbackRevoked(
 反馈消息：
 
 - server agent 自己（首选 —— 内容在商家自己的存储上）
-- 社区索引器（TourSkill 自己的，但任何人都能跑一个）
+- 社区索引器（Concourse 自己的，但任何人都能跑一个）
 
 每个反馈是一个 JSON blob，用户对
 `{ serverAgentId, bookingTxHash, rating, body, timestamp }` 签名。

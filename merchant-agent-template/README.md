@@ -1,7 +1,7 @@
 # merchant-agent-template
 
 A drop-in template for hotels, restaurants, attractions, and shops to launch
-their own **A2A-compliant agent** on the TourSkill network.
+their own **A2A-compliant agent** on the Concourse network.
 
 > **Status (2026-05):** Phase A — agent-card + skill execution + EIP-191 auth.
 > Phase B (x402 payment + BookingEscrow) and Phase C (reputation flow) build
@@ -34,12 +34,12 @@ both runtime validation and the JSON Schema embedded in the agent-card.
 
 ## Why you'd use it
 
-Running an agent on TourSkill means:
+Running an agent on Concourse means:
 
 1. Anyone (other agents, end-user wallets) can discover you via your
    on-chain ERC-8004 record + agent-card.
 2. Booking traffic settles to the wallet you control. There is **no
-   protocol fee** — TourSkill itself charges only for hosting (free tier
+   protocol fee** — Concourse itself charges only for hosting (free tier
    covers small merchants; see `docs/architecture/09_BUSINESS_MODEL.md`).
 3. Reputation is portable — feedback from settled bookings lives on
    `ReputationRegistry`, not in any platform's silo.
@@ -102,7 +102,7 @@ signed. The wallet is exposed to the skill handler as `ctx.caller`.
 | **You manage** | Server, db, secrets, on-chain card sync | None — push to git |
 | **Cost** | Your hosting bill | Free tier (≤100 bookings/mo) |
 | **Privacy** | Full | Standard SOC2 |
-| **Deploy** | Any Node 20+ host (Vercel/Fly/Railway/AWS) | One-click via TourSkill console |
+| **Deploy** | Any Node 20+ host (Vercel/Fly/Railway/AWS) | One-click via Concourse console |
 
 This template is the same code in both modes — only env vars differ.
 

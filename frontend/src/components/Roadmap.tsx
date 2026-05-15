@@ -36,7 +36,7 @@ const ITEMS: RoadmapItem[] = [
   {
     status: 'building',
     title: 'Mainnet via canonical registry',
-    detail: 'Deploy switch lands TourSkill agents on the shared ERC-8004 mainnet address (0x8004A169…A432). 8004scan and the broader ecosystem auto-index us — no custom indexer required.',
+    detail: 'Deploy switch lands Concourse agents on the shared ERC-8004 mainnet address (0x8004A169…A432). 8004scan and the broader ecosystem auto-index us — no custom indexer required.',
   },
   {
     status: 'building',
@@ -62,7 +62,7 @@ const ITEMS: RoadmapItem[] = [
   },
   {
     status: 'planned',
-    title: 'Multi-tenant SaaS + @tourskill/cli',
+    title: 'Multi-tenant SaaS + @concourse/cli',
     detail: 'Platform-hosted multi-tenant runtime so 95% of merchants get zero-ops SaaS pricing (free tier + paid). Independent npm CLI for developers integrating the protocol from any language.',
   },
 ]

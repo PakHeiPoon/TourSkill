@@ -4,7 +4,7 @@
  * Two schemes (declared in agent-card's `authentication.schemes`):
  *
  * 1. `bearer` — opaque session token, minted via /auth/challenge →
- *    /auth/verify (mirrors TourSkill backend's flow exactly so the same
+ *    /auth/verify (mirrors Concourse backend's flow exactly so the same
  *    EIP-191 challenge-response works).
  *
  * 2. `eip191` — direct per-request signature for one-shot agent calls
@@ -55,7 +55,7 @@ export function mintChallenge(walletAddress: string): {
   const expiresIso = new Date(expiresAt).toISOString();
 
   const message =
-    'TourSkill merchant-agent — authorize this session\n\n' +
+    'Concourse merchant-agent — authorize this session\n\n' +
     `Wallet: ${wallet}\n` +
     `Nonce:  ${nonce}\n` +
     `Expires: ${expiresIso}\n\n` +
@@ -148,7 +148,7 @@ export async function verifyEip191Direct(args: {
   // the session-mint message above so a session-mint signature can never
   // be replayed as a per-request signature.
   const message =
-    'TourSkill merchant-agent — direct request\n\n' +
+    'Concourse merchant-agent — direct request\n\n' +
     `Caller:       ${agentAddress.toLowerCase()}\n` +
     `Request-Hash: ${requestHash}\n` +
     `Nonce:        ${nonce}\n`;

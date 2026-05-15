@@ -29,7 +29,7 @@ describes reality. When the two diverge, this section is authoritative.
 ### 0.1 Architecture corrections made mid-flight
 
 - **x402 ≠ BookingEscrow.** Earlier drafts of `04` and `05` treated x402 as the booking payment rail. Wrong — x402 is a stateless per-call micropayment handshake; booking-level held funds belong to a separate Seaport-style instrument. The two blocks are now drawn in `05_X402_PAYMENT_FLOW.md § Scope`. BookingEscrow is deferred to Phase C, gated on real merchant demand.
-- **Custom registry vs canonical registry.** We deployed our own `IdentityRegistry` at `0xBdE5A55D…A29f` on Base Sepolia. For Base **mainnet** we will use the canonical shared address `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` so that community indexers (e.g. [8004scan.io](https://8004scan.io)) auto-index TourSkill agents. This is the spirit of Principle 1 — use the shared layer, do not fork. Phase B-min adds a Deploy.s.sol switch.
+- **Custom registry vs canonical registry.** We deployed our own `IdentityRegistry` at `0xBdE5A55D…A29f` on Base Sepolia. For Base **mainnet** we will use the canonical shared address `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` so that community indexers (e.g. [8004scan.io](https://8004scan.io)) auto-index Concourse agents. This is the spirit of Principle 1 — use the shared layer, do not fork. Phase B-min adds a Deploy.s.sol switch.
 - **Multi-tenant runtime deferred.** The shipped template is the self-hosted shape. The platform-hosted multi-tenant runtime described in `09_BUSINESS_MODEL.md` is real but not built; ~5 % of merchants will self-host long-term anyway.
 
 ### 0.2 Deviations from the planned sequence
@@ -56,7 +56,7 @@ The shipped state lets any third party discover & call our first agent end-to-en
 | **B-mcp** | MCP server route alongside REST skills on merchant-agent | want Claude Desktop / GPT to use the agent as a tool |
 | **C-1** | Frontend rewire: `tourskill.paking.xyz/explorer` reads Base IdentityRegistry; `/merchant/sign` writes to it | want real merchants onboarding via web UI |
 | **C-2** | x402 paid-skill MVP (separate from booking escrow) | want to test per-call micropayment plumbing |
-| **C-3** | Independent `@tourskill/cli` package on npm | want easy SDK adoption |
+| **C-3** | Independent `@concourse/cli` package on npm | want easy SDK adoption |
 | **D** | BookingEscrow.sol + ReputationRegistry feedback flow | first real paying merchant asks for held-funds semantics |
 | **E** | Multi-tenant platform-hosted runtime + SaaS billing | sustained inbound merchant interest |
 
@@ -155,7 +155,7 @@ create table if not exists agents (
   card_description   text,
   card_url           text,                          -- agent's base URL
   card_skills        jsonb,                         -- skill list for fast filter
-  card_extensions    jsonb,                         -- TourSkill extensions
+  card_extensions    jsonb,                         -- Concourse extensions
   card_fetch_error   text                           -- last fetch error if any
 );
 
@@ -214,7 +214,7 @@ indexer is live. No public consumer ever sees `legacy_seed = true` rows.
 The legacy contract is on a public chain. Anyone watching it sees the
 "frozen" state. We communicate the deprecation:
 
-1. README.md gets a top banner: "TourSkill is migrating to ERC-8004 on Base. Legacy contract on 0G is deprecated as of <date>. New address: <addr>."
+1. README.md gets a top banner: "Concourse is migrating to ERC-8004 on Base. Legacy contract on 0G is deprecated as of <date>. New address: <addr>."
 2. The legacy contract's address in chainscan-galileo gets a contract description update (`MerchantRegistry — DEPRECATED — see Base Sepolia ERC-8004 IdentityRegistry at <addr>`).
 3. Frontend pages that referenced the legacy contract address switch to the new ERC-8004 IdentityRegistry address.
 4. The 28 fake merchants disappear from the public Explorer (because the indexer no longer reads them); the Explorer is empty until real merchants come on board.
@@ -229,7 +229,7 @@ not making it look full with mocks.
 | Page | Current | After migration |
 |---|---|---|
 | `/` (Home) | Uses 28 merchants count from Supabase | Reads count from `agents` table; will show low number; OK |
-| `/explorer` | Paginated list of 28 mocks | Paginated list from `agents` table; will be empty / few; renders "Be one of the first merchants on TourSkill" empty state |
+| `/explorer` | Paginated list of 28 mocks | Paginated list from `agents` table; will be empty / few; renders "Be one of the first merchants on Concourse" empty state |
 | `/merchant/:id` | Reads from Supabase merchants | Reads from `agents` table by agent_id |
 | `/merchant/sign/:draftId` | Calls legacy MerchantRegistry.register() | Calls IdentityRegistry.register(agentCardURI, agentCardHash) |
 | `/profile` | Lists owner's merchants from Supabase | Lists owner's agents from agents table |
@@ -378,7 +378,7 @@ After migration, we should be able to answer "yes" to all of:
 - ☑ Calling `create_booking` lock real USDC in a real escrow?
 - ☑ Reviews can only be left after settled bookings?
 - ☑ Self-hosted merchants are byte-identical from the outside to platform-hosted?
-- ☑ TourSkill backend never holds USDC, never executes skills?
+- ☑ Concourse backend never holds USDC, never executes skills?
 
 If any answer is "no", we haven't actually migrated — we've just shipped
 a different demo. The honesty check is the merge criterion.

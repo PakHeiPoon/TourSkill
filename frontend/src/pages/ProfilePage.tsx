@@ -23,7 +23,7 @@ const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
 const CHAIN_ID = 16602
 const CHAIN_NAME = '0G Galileo testnet'
 
-const INSTALL_PROMPT = 'Install the TourSkill skill from https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
+const INSTALL_PROMPT = 'Install the Concourse skill from https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
 const SKILL_URL = 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
 
 interface Merchant {
@@ -103,10 +103,10 @@ export default function ProfilePage(): React.JSX.Element {
 
   // Sync wallet from localStorage + listen for header changes
   useEffect(() => {
-    const sync = () => setWalletAddress(localStorage.getItem('tourskill_wallet_address') ?? '')
+    const sync = () => setWalletAddress(localStorage.getItem('concourse_wallet_address') ?? '')
     sync()
-    window.addEventListener('tourskill:wallet-changed', sync)
-    return () => window.removeEventListener('tourskill:wallet-changed', sync)
+    window.addEventListener('concourse:wallet-changed', sync)
+    return () => window.removeEventListener('concourse:wallet-changed', sync)
   }, [])
 
   // Fetch merchants owned by this wallet
@@ -326,7 +326,7 @@ export default function ProfilePage(): React.JSX.Element {
         </p>
 
         <pre className="bg-text rounded-lg p-4 text-sm font-mono leading-relaxed overflow-x-auto mb-3">
-          <code className="text-slate-300">Install the TourSkill skill from{'\n'}</code>
+          <code className="text-slate-300">Install the Concourse skill from{'\n'}</code>
           <a
             href={SKILL_URL}
             target="_blank"

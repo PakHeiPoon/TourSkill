@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 
 export type Lang = 'en' | 'zh'
 
-const STORAGE_KEY = 'tourskill_lang'
+const STORAGE_KEY = 'concourse_lang'
 
 // Flat translation dict. Keys use dotted namespacing.
 const TRANSLATIONS: Record<Lang, Record<string, string>> = {
@@ -17,20 +17,20 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'header.connectedAs': 'Connected as',
 
     // ─── Footer ───
-    'footer.copy': '© 2026 TourSkill. The Decentralized A2A Tourism Registry.',
+    'footer.copy': '© 2026 Concourse. The open A2A · P2P protocol layer for AI agents.',
     'footer.contract': 'Contract',
     'footer.skillMd': 'SKILL.md',
     'footer.github': 'GitHub',
 
     // ─── Home: live badge ───
-    'home.liveBadge': '28 merchants live on 0G testnet',
+    'home.liveBadge': 'Agent #1 live on Base Sepolia · ERC-8004',
 
     // ─── Home: hero ───
-    'home.hero.line1': 'The Decentralized',
-    'home.hero.line2': 'A2A Tourism Registry',
-    'home.hero.subtitle.before': "Your agent talks to their agent. No OTA, no middleman. Every merchant bound to a real wallet, every call settled via ",
+    'home.hero.line1': 'Where AI agents',
+    'home.hero.line2': 'meet, verify, transact',
+    'home.hero.subtitle.before': "Concourse is the open protocol layer for Agent-to-Agent, Peer-to-Peer commerce. Discovery on ERC-8004, settlement via ",
     'home.hero.subtitle.highlight': 'x402 micropayments',
-    'home.hero.subtitle.after': ' at the HTTP layer.',
+    'home.hero.subtitle.after': ' at the HTTP layer. Tourism is the first vertical — any commerce category follows.',
 
     // ─── Home: CTAs ───
     'home.cta.human': "I'm Human",
@@ -41,8 +41,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // ─── Home: install card ───
     'home.install.tab.personal': 'Personal Agent',
     'home.install.tab.merchant': 'Merchant Agent',
-    'home.install.title.personal': 'Send your AI agent to TourSkill',
-    'home.install.title.merchant': 'Bring your merchant agent to TourSkill',
+    'home.install.title.personal': 'Send your AI agent to Concourse',
+    'home.install.title.merchant': 'Bring your merchant agent to Concourse',
     'home.install.copy': 'Copy',
     'home.install.copied': 'Copied',
     // Personal agent flow
@@ -100,7 +100,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // ─── Profile page ───
     'profile.connectWallet.title': 'Connect your wallet',
-    'profile.connectWallet.body': 'Sign in with your wallet to view your TourSkill profile, manage your registered merchants, and connect your AI agent.',
+    'profile.connectWallet.body': 'Sign in with your wallet to view your Concourse profile, manage your registered merchants, and connect your AI agent.',
     'profile.connectWallet.hint': 'Use the Connect Wallet button in the top right →',
     'profile.wallet.title': 'Wallet Profile',
     'profile.wallet.viewChainscan': 'View on chainscan',
@@ -113,7 +113,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'profile.merchants.updating': 'Updating…',
     'profile.merchants.toggleError': 'Could not toggle status — check your connection and try again.',
     'profile.agent.title': 'Connect your AI Agent',
-    'profile.agent.body': 'Send this one-line install prompt to your personal AI agent. It will fetch the TourSkill SKILL.md and immediately start interacting with the on-chain registry.',
+    'profile.agent.body': 'Send this one-line install prompt to your personal AI agent. It will fetch the Concourse SKILL.md and immediately start interacting with the on-chain registry.',
     'profile.agent.copyButton': 'Copy install prompt',
     'profile.agent.copied': 'Copied to clipboard',
 
@@ -147,7 +147,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // ─── Registration portal ───
     'register.title': 'Register your Merchant',
-    'register.subtitle': 'Publish your hotel, restaurant, or attraction onto the decentralized TourSkill registry. Any AI agent will be able to discover and invoke your on-chain skills.',
+    'register.subtitle': 'Publish your hotel, restaurant, or attraction onto the decentralized Concourse registry. Any AI agent will be able to discover and invoke your on-chain skills.',
     'register.step1.title': 'Basic Info',
     'register.step1.desc': 'Type, name and location',
     'register.step2.title': 'Business Details',
@@ -194,7 +194,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // ─── Agent demo page (chat UI) ───
     'demo.connectTitle': 'Connect to 0G Compute Network',
     'demo.connectBadge': 'Connected to 0G Compute · {network}',
-    'demo.agentName': 'TourSkill AI Agent',
+    'demo.agentName': 'Concourse AI Agent',
     'demo.agentStatus.ready': '0G Compute · {model}',
     'demo.agentStatus.notConnected': 'Not Connected',
     'demo.empty.title': 'Connect your wallet to start',
@@ -212,7 +212,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'demo.qiniu.cta': 'Connect with API Key',
     'demo.qiniu.connectedBadge': 'Connected to Qiniu AIGC',
     'demo.qiniu.connectedModel': 'Model: {model} · API key auth',
-    'demo.greeting': "Hello! I'm your AI travel assistant powered by **0G Compute Network** and the **TourSkill** decentralized registry.",
+    'demo.greeting': "Hello! I'm your AI travel assistant powered by **0G Compute Network** and the **Concourse** decentralized registry.",
     'demo.greeting.canDo': 'I can discover tourism merchants and interact with their on-chain skills. Try asking me:',
     'demo.greeting.ex1': '"Find restaurants in Hangzhou"',
     'demo.greeting.ex2': '"Any hotels in Shanghai?"',
@@ -317,20 +317,20 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'header.connectedAs': '已连接',
 
     // ─── Footer ───
-    'footer.copy': '© 2026 TourSkill · 去中心化 A2A 旅游注册表',
+    'footer.copy': '© 2026 Concourse · 开放的 A2A · P2P 协议层，为 AI agent 而生。',
     'footer.contract': '智能合约',
     'footer.skillMd': 'SKILL.md',
     'footer.github': 'GitHub',
 
     // ─── Home: live badge ───
-    'home.liveBadge': '0G 测试网已注册 28 家商家',
+    'home.liveBadge': 'Agent #1 已上链 · Base Sepolia · ERC-8004',
 
     // ─── Home: hero ───
-    'home.hero.line1': '去中心化',
-    'home.hero.line2': 'A2A 旅游注册表',
-    'home.hero.subtitle.before': '你的 agent 跟他们的 agent 对话——无 OTA、无中间商。每个商家绑定真实钱包，每次调用通过 ',
+    'home.hero.line1': 'AI agent 之间',
+    'home.hero.line2': '发现、验证、交易',
+    'home.hero.subtitle.before': 'Concourse 是 Agent-to-Agent、Peer-to-Peer 的开放协议层。在 ERC-8004 上发现，通过 ',
     'home.hero.subtitle.highlight': 'x402 微支付',
-    'home.hero.subtitle.after': ' 在 HTTP 层结算。',
+    'home.hero.subtitle.after': ' 在 HTTP 层结算。旅游是验证协议的第一个垂类——任何商业类型都能跑在这套协议上。',
 
     // ─── Home: CTAs ───
     'home.cta.human': '我是真人',
@@ -341,8 +341,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // ─── Home: install card ───
     'home.install.tab.personal': '个人 Agent',
     'home.install.tab.merchant': '商家 Agent',
-    'home.install.title.personal': '把你的 AI agent 接入 TourSkill',
-    'home.install.title.merchant': '让你的商家 agent 接入 TourSkill',
+    'home.install.title.personal': '把你的 AI agent 接入 Concourse',
+    'home.install.title.merchant': '让你的商家 agent 接入 Concourse',
     'home.install.copy': '复制',
     'home.install.copied': '已复制',
     // Personal
@@ -400,7 +400,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // ─── Profile page ───
     'profile.connectWallet.title': '连接钱包',
-    'profile.connectWallet.body': '用钱包登录后即可查看你的 TourSkill 身份、管理已注册的商家，并把你的 AI agent 接入 TourSkill。',
+    'profile.connectWallet.body': '用钱包登录后即可查看你的 Concourse 身份、管理已注册的商家，并把你的 AI agent 接入 Concourse。',
     'profile.connectWallet.hint': '点击右上角"连接钱包"按钮 →',
     'profile.wallet.title': '钱包身份',
     'profile.wallet.viewChainscan': '在 chainscan 查看',
@@ -413,7 +413,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'profile.merchants.updating': '更新中……',
     'profile.merchants.toggleError': '切换状态失败——请检查网络后重试。',
     'profile.agent.title': '接入你的 AI Agent',
-    'profile.agent.body': '把下面这一行粘贴给你的个人 AI agent，它会自动抓取 TourSkill SKILL.md 并开始跟链上注册表交互。',
+    'profile.agent.body': '把下面这一行粘贴给你的个人 AI agent，它会自动抓取 Concourse SKILL.md 并开始跟链上注册表交互。',
     'profile.agent.copyButton': '复制安装命令',
     'profile.agent.copied': '已复制到剪贴板',
 
@@ -447,7 +447,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // ─── Registration portal ───
     'register.title': '注册你的商家',
-    'register.subtitle': '把你的酒店、餐厅或景点发布到 TourSkill 去中心化注册表。任何 AI agent 都能发现并调用你链上声明的技能。',
+    'register.subtitle': '把你的酒店、餐厅或景点发布到 Concourse 去中心化注册表。任何 AI agent 都能发现并调用你链上声明的技能。',
     'register.step1.title': '基本信息',
     'register.step1.desc': '类型、名称与位置',
     'register.step2.title': '经营详情',
@@ -494,7 +494,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // ─── Agent demo page (chat UI) ───
     'demo.connectTitle': '连接到 0G Compute Network',
     'demo.connectBadge': '已连接 0G Compute · {network}',
-    'demo.agentName': 'TourSkill AI Agent',
+    'demo.agentName': 'Concourse AI Agent',
     'demo.agentStatus.ready': '0G Compute · {model}',
     'demo.agentStatus.notConnected': '未连接',
     'demo.empty.title': '连接钱包以开始对话',
@@ -512,7 +512,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'demo.qiniu.cta': '使用 API Key 连接',
     'demo.qiniu.connectedBadge': '已连接七牛云 AIGC',
     'demo.qiniu.connectedModel': '模型：{model} · API key 鉴权',
-    'demo.greeting': '你好！我是你的 AI 旅行助手，由 **0G Compute Network** 驱动，接入 **TourSkill** 去中心化商家注册表。',
+    'demo.greeting': '你好！我是你的 AI 旅行助手，由 **0G Compute Network** 驱动，接入 **Concourse** 去中心化商家注册表。',
     'demo.greeting.canDo': '我可以发现各种旅游商家，并调用它们的链上技能。试着问我：',
     'demo.greeting.ex1': '"杭州有什么餐厅推荐？"',
     'demo.greeting.ex2': '"上海有什么酒店？"',
