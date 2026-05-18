@@ -1,334 +1,253 @@
 ---
 name: concourse-user-client
 description: |
-  Discover and invoke tourism merchants (hotels, restaurants, attractions) on the
-  Concourse decentralized A2A registry. Personalizes results with the user's profile
-  (preferences, allergens, history) and lets the agent reserve / book / purchase on
-  the user's behalf — peer-to-peer, no OTA platform fees.
-version: 0.1.0
+  Discover and invoke ERC-8004 / A2A trustless agents directly — no platform,
+  no gateway, no SDK. You talk to (1) Base chain RPC for discovery, (2) each
+  merchant's own URL for the agent-card, (3) the same URL's /skills/<name>
+  for invocation. Verify integrity with SHA-256 against the on-chain commit.
+  Concourse the website can disappear; this skill keeps working.
+version: 0.2.0
+audience: end-user (booking hotels, restaurants, attractions via AI agent)
 trigger_keywords:
   - book a hotel
   - find a restaurant
   - reserve a table
+  - check availability
   - 订房
-  - 订餐
-  - 找餐厅
+  - 找酒店
+  - 预订餐厅
   - concourse
-  - travel agent
-default_api_base: https://api.tourskill.paking.xyz   # public gateway — works out of the box
+  - erc-8004
+  - trustless agent
+required_env: []
 optional_env:
-  - TOURSKILL_API_BASE       # override if self-hosting. Default: the public gateway above.
-  - TOURSKILL_DEV_MODE       # "true" (default while SIWE is being built) → skip auth. Future: set to "false" once SIWE ships.
-  - TOURSKILL_USER_TOKEN     # [FUTURE] JWT bearer, 14d expiry. Not required yet — SIWE flow is roadmap.
-  - TOURSKILL_WALLET_ADDRESS # [FUTURE] 0x... — paired with TOURSKILL_USER_TOKEN.
-endpoints_reference:
-  public_api:    https://api.tourskill.paking.xyz
-  faucet:        https://hub.0g.ai/faucet?network=testnet
-  dev_api:       http://localhost:8000   # only if self-hosting the gateway
-chain:
-  network: 0g_testnet
-  chain_id: 16602
-  rpc: https://evmrpc-testnet.0g.ai
-  registry_contract: "0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543"
+  - CONCOURSE_RPC_URL        # default: https://sepolia.base.org
+  - CONCOURSE_REGISTRY       # default: 0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f (Base Sepolia)
+  - CONCOURSE_CHAIN_ID       # default: 84532 (Base Sepolia)
+protocol_specs:
+  - { name: ERC-8004, url: https://eips.ethereum.org/EIPS/eip-8004, role: on-chain identity registry }
+  - { name: A2A Agent Card, url: https://google.github.io/A2A/, role: off-chain JSON descriptor }
+  - { name: x402, url: https://x402.org, role: per-call USDC settlement (paid skills) }
+trust_model:
+  intermediaries_required: 0
+  trusted_components:
+    - Base/Ethereum (chain consensus)
+    - SHA-256 (RFC 6234)
+    - merchant's own DNS + TLS (only for the specific merchant being called)
+  NOT_trusted:
+    - any Concourse-operated server / frontend / CDN
+    - any indexer (8004scan, etc.) — convenience only, not authoritative
+    - the X-Card-SHA256 HTTP header the merchant sends (you must re-compute)
 ---
 
-# Concourse — User Client Skill
+# Concourse — User-Side Skill (P2P edition)
 
-You (the agent) help your principal (the human user) interact directly with tourism
-merchants on the Concourse decentralized registry. No platform middleman, no
-algorithmic ranking — you discover merchants on-chain, personalize results from
-the user's own context, and invoke executable skills (menu, booking, ticketing) via
-MCP-compatible HTTP calls.
+You are an AI agent assisting a human user (your "principal"). Your job is to
+discover and invoke real-world commerce agents (hotels, restaurants, attractions)
+registered on the **ERC-8004 IdentityRegistry**. Every step you take in this
+flow is a direct conversation between you (the AI) and the merchant's own
+server. **No Concourse-controlled infrastructure sits in the middle.**
+
+This is the operational definition of *Agent-to-Agent, peer-to-peer commerce*.
 
 ---
 
-## 0. Quickstart — Zero Config (read this first)
+## 0. Why this skill exists
 
-This skill works **out of the box** against the public Concourse gateway at
-`https://api.tourskill.paking.xyz`. No env vars required, no auth setup,
-no local backend to run. Just read the rest of this file and start using the
-endpoints in Section 2.
+Most "agent marketplaces" today are platform-mediated: discovery, ranking, even
+the API calls flow through a vendor's gateway (OpenAI plugins, Anthropic MCP
+catalogs, Coinbase AgentKit). If the vendor disappears, so does your access.
 
-The public gateway reads the 28 already-registered merchants from the on-chain
-`MerchantRegistry` contract (0G testnet, chainId 16602). You don't register
-anything — you consume what's already there.
+This skill demonstrates the inverse: a strictly **registry-mediated** protocol.
+The registry is a public smart contract; anyone reads it permissionlessly. You
+verify integrity with cryptography, not with platform trust.
 
-### (Optional) Override the API base
+**Falsifiable claim**: an end-to-end booking can complete using only:
 
-If you self-host the gateway or want to point at a preview deployment, set:
+- a public Base RPC endpoint (any of: Coinbase, Alchemy, Quicknode, your own)
+- a SHA-256 implementation
+- HTTPS
 
-```env
-TOURSKILL_API_BASE=http://localhost:8000   # or your own URL
+If you can complete a booking with these three primitives alone — Concourse's
+website, API, frontend, **all of it off** — the platform is operationally
+dispensable. That is the entire point of this skill.
+
+---
+
+## 1. The 4-step protocol (memorize this)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│   ① DISCOVER       eth_call → IdentityRegistry.getAgent(id)             │
+│                    returns (owner, cardURI, cardHash, …)                 │
+│                                                                          │
+│   ② FETCH          GET cardURI                                          │
+│                    returns JSON bytes                                    │
+│                                                                          │
+│   ③ VERIFY         sha256(bytes) == cardHash ?                          │
+│                    if no → ABORT                                         │
+│                                                                          │
+│   ④ INVOKE         POST card.url + skill.endpoint                       │
+│                    direct to merchant, with their auth scheme           │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Otherwise, assume `TOURSKILL_API_BASE=https://api.tourskill.paking.xyz`
-everywhere in this document.
+If any step requires a Concourse-operated server, **you are doing it wrong**.
 
-### 15-second smoke test
+---
 
-Before doing anything else, **verify the gateway is reachable**. If any step
-fails, report the error verbatim — do not proceed.
+## 2. Recipes
+
+### Recipe A — list all active agents
 
 ```bash
-BASE="${TOURSKILL_API_BASE:-https://api.tourskill.paking.xyz}"
+RPC="${CONCOURSE_RPC_URL:-https://sepolia.base.org}"
+REG="${CONCOURSE_REGISTRY:-0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f}"
 
-# 1. Gateway up?
-curl -s "$BASE/health"
-# expect: {"status":"ok"}
-
-# 2. Discovery returns on-chain merchants?
-curl -s -X POST "$BASE/v1/discover" \
-  -H "Content-Type: application/json" \
-  -d '{"city":"hangzhou","type":"restaurant"}'
-# expect: 3 Hangzhou restaurants (Zhi Wei Guan, Green Tea Restaurant,
-#         Grandma's Kitchen) with their DIDs and skills
-
-# 3. MCP tools listed?
-curl -s "$BASE/mcp/tools/list"
-# expect: 3 tools (discover_merchants, invoke_merchant_skill, get_merchant_details)
+TOTAL=$(cast call --rpc-url "$RPC" "$REG" "totalAgents()(uint256)")
+for i in $(seq 1 "$TOTAL"); do
+  cast call --rpc-url "$RPC" "$REG" \
+    "getAgent(uint256)((address,string,bytes32,uint64,uint64,bool))" "$i"
+done
 ```
 
-All three pass → skip Section 1 (auth roadmap) and go straight to Section 2.
+Each row: `(owner, agentCardURI, agentCardHash, registeredAt, updatedAt, active)`.
+Filter `active == true`.
+
+### Recipe B — fetch + verify a card
+
+```bash
+URI="https://wumingchu.concourse.paking.xyz/.well-known/agent-card.json"
+CHAIN_HASH="0x26219e9169f3ea8fca569d2f6f2e54a88f7b9109b49da4e6fc2d09ae8a22f7bd"
+
+curl -s "$URI" > /tmp/card.json
+COMPUTED="0x$(shasum -a 256 /tmp/card.json | cut -d' ' -f1)"
+
+[ "$COMPUTED" = "$CHAIN_HASH" ] \
+  && echo "✓ verified — safe to read this card" \
+  || echo "✗ ABORT — card tampered, do not trust"
+```
+
+**Critical**: `X-Card-SHA256` header is informational only. Always re-compute
+from the body. A dishonest server can put any value in the header.
+
+### Recipe C — invoke a skill
+
+```bash
+BASE_URL=$(jq -r '.url' /tmp/card.json)
+ENDPOINT=$(jq -r '.skills[] | select(.name=="check_availability") | .endpoint' /tmp/card.json)
+
+curl -sS -X POST "${BASE_URL}${ENDPOINT}" \
+  -H 'Content-Type: application/json' \
+  -d '{"check_in":"2026-09-01","check_out":"2026-09-03","room_type":"mountain_view"}'
+```
+
+State-changing skills (`create_booking` etc.) require an `Idempotency-Key`
+header — without it the merchant returns HTTP 400:
+
+```bash
+curl -sS -X POST "${BASE_URL}/skills/create_booking" \
+  -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{...}'
+```
 
 ---
 
-## 1. Auth (Roadmap — not yet enforced)
+## 3. Conversation flow with the user
 
-The current public gateway is **open-read**: no token required. A SIWE-based
-auth layer is on the roadmap to prevent bot abuse once traffic ramps. When it
-ships, this section will describe the login flow. **For now, ignore
-TOURSKILL_USER_TOKEN and TOURSKILL_WALLET_ADDRESS** — calls work without them.
+When the user says "find me a hotel in Huangshan for 2 nights":
 
-<details>
-<summary>Planned SIWE flow (click to expand)</summary>
+1. **Discover** (Recipe A). Filter by
+   `card.extensions["tourskill.org/v1/merchant"].type == "hotel"` and
+   `extensions["tourskill.org/v1/location"].city == "huangshan"`.
+2. **Verify** every candidate (Recipe B). Skip failures, surface them as
+   "skipped (card tampered or stale)".
+3. **Quote**: invoke `check_availability` (Recipe C).
+4. **Present**: include the merchant's owner address and a Basescan link.
+5. **Book (only if user confirms)**: invoke `create_booking` with
+   `Idempotency-Key`.
 
-In production, every registry call requires a JWT bearer token bound to a 0G testnet
-wallet. The user obtains this token by signing a one-time SIWE message in their
-browser. Token is valid 14 days.
+### Honest disclosure rules
 
-### Check current state
-
-```
-if TOURSKILL_USER_TOKEN missing OR TOURSKILL_WALLET_ADDRESS missing:
-    → run install flow (1.1)
-else:
-    → call GET ${TOURSKILL_API_BASE}/v1/auth/me
-      → 200: ready
-      → 401: token expired, run re-login (1.3)
-```
-
-### 1.1 Install flow — guide the user through SIWE
-
-Walk the user through these steps **conversationally**.
-
-1. **Confirm wallet readiness.**
-   > "Concourse uses 0G testnet for identity. Do you have a wallet (MetaMask, Rabby, etc.)
-   > with a small amount of 0G testnet tokens for gas? If not, grab some from
-   > https://hub.0g.ai/faucet?network=testnet first."
-
-2. **Open the login page.**
-   > "Open this link in your browser and click *Sign in with Wallet*:
-   > **`${TOURSKILL_CONSOLE_BASE:-https://app.concourse.xyz}/login?source=agent`**
-   >
-   > Your wallet pops up to sign a message (no gas, just signature). After signing,
-   > the page shows a **token** and your **wallet address** — paste both back to me."
-
-3. **Persist credentials.** Write to `.env`:
-   ```
-   TOURSKILL_USER_TOKEN=eyJhbGciOiJIUzI1NiIs...
-   TOURSKILL_WALLET_ADDRESS=0x1a2b3c...def
-   ```
-
-4. **Verify** with `GET ${TOURSKILL_API_BASE}/v1/auth/me`. Expect 200.
-
-### 1.2 (Optional) Profile enrichment
-
-After install, **offer** to direct the user to `${TOURSKILL_CONSOLE_BASE}/profile`
-to add personalization context (dietary restrictions, allergens, budget tier, travel
-style, languages). Profile updates require a fresh on-chain signature — user pays
-gas (~free on testnet). **Never** auto-submit profile changes on the user's behalf.
-
-### 1.3 Token expired — re-login
-
-When you get `401 token_expired`, just rerun **1.1 step 2 onwards**. Old tokens are
-implicitly revoked the moment a new one is issued (server tracks `min_valid_iat` per
-wallet).
-
-### 1.4 Logout / kill switch
-
-If the user says *"log me out"* or *"my wallet might be compromised"*:
-- `POST ${TOURSKILL_API_BASE}/v1/auth/logout` with current bearer token
-- Delete `TOURSKILL_USER_TOKEN` and `TOURSKILL_WALLET_ADDRESS` from `.env`
-- Confirm: *"Logged out. All tokens for this wallet are now invalid."*
-
-</details>
+- Always say "Verified on Base — agent #N, contract 0xBdE5…A29f".
+- Never claim "lowest price" unless you actually iterated every active agent.
+- If verification fails, **surface it to the user, exclude the merchant**.
 
 ---
 
-## 2. The Core Loop — Intent → Discover → Personalize → Invoke
+## 4. Authentication (if a skill requires it)
 
-When the user expresses any tourism intent, run this 4-step loop. **Never skip
-steps.** Today the public gateway accepts unauthenticated calls — no bearer
-header needed. Once SIWE ships, add `Authorization: Bearer ${TOURSKILL_USER_TOKEN}`
-to each request.
-
-### Step 1 — Classify intent
-
-Extract a structured intent from the user's natural-language request. Don't ask
-the user to fill a form — infer everything you can, then ask **at most one**
-clarifying question if a critical field is missing.
-
-```
-intent = {
-  category:      "restaurant" | "hotel" | "attraction",
-  city:          str (lowercase, e.g. "hangzhou"),
-  date:          ISO date | null,
-  time:          "HH:MM" | null,
-  party_size:    int | null,
-  budget_per_person: int | null,   # CNY
-  cuisine_or_style:  str | null,   # e.g. "本帮菜", "lake view"
-  must_haves:    [str],            # e.g. ["wheelchair access", "private room"]
+```json
+"authentication": {
+  "schemes": ["bearer", "eip191"],
+  "challengeEndpoint": "/auth/challenge",
+  "verifyEndpoint":    "/auth/verify"
 }
 ```
 
-**Critical fields per category** (if missing, ask):
-- restaurant → `city`, `date`, `party_size`
-- hotel → `city`, `check_in`, `check_out`, `guests`
-- attraction → `city`, `date`
+```bash
+# 1. Ask merchant for a nonce
+NONCE=$(curl -sX POST "${BASE_URL}/auth/challenge" \
+  -H 'Content-Type: application/json' \
+  -d "{\"wallet_address\":\"$USER_WALLET\"}" | jq -r .nonce)
 
-### Step 2 — Discover candidates
+# 2. User signs the nonce (the AI never sees the private key)
 
-```http
-POST ${TOURSKILL_API_BASE}/v1/discover
-Content-Type: application/json
+# 3. Submit signature → opaque bearer token
+TOKEN=$(curl -sX POST "${BASE_URL}/auth/verify" \
+  -H 'Content-Type: application/json' \
+  -d "{\"wallet_address\":\"$USER_WALLET\",\"nonce\":\"$NONCE\",\"signature\":\"$SIG\"}" \
+  | jq -r .token)
 
-{
-  "city":    "<intent.city>",
-  "type":    "<intent.category>",
-  "keyword": "<intent.cuisine_or_style or null>"
-}
+# 4. Use for subsequent calls
+curl -H "Authorization: Bearer $TOKEN" ...
 ```
 
-Returns a list of merchants with `merchant_id` (DID), `name`, `description`,
-`location`, `skills`, `reputation_score` (when reputation system ships).
+The token is **scoped to this merchant**. There is no Concourse-issued session.
 
-### Step 3 — Personalize ranking (THIS IS WHY USERS PICK YOU OVER AN OTA)
+---
 
-Re-rank the candidates using **your own knowledge of the user**. Pull from the
-host agent's own memory: past trips, food preferences, dietary restrictions,
-budget, work context, who they're traveling with. A Concourse-native profile
-endpoint (`GET /v1/auth/me`) is on the roadmap — until then, lean entirely on
-the host agent's memory.
+## 5. Adversarial test
 
-Apply this scoring (suggested weights):
+Re-run the recipes with a non-Concourse RPC and `concourse.paking.xyz`
+unreachable:
 
-| Signal | Weight |
-|---|---|
-| Hard constraints met (allergens, accessibility, budget cap) | **filter** (drop if violated) |
-| Match against user's stated cuisine/style preferences | +3 |
-| Match against past positive choices in this city | +2 |
-| Reputation score (when available) | +2 |
-| Distance from user's stated location/hotel | +1 |
-| Novelty bonus (user hasn't tried this merchant before) | +1 |
+```bash
+export CONCOURSE_RPC_URL="https://base-sepolia.public.blastapi.io"
+# Optional: add `0.0.0.0  concourse.paking.xyz` to /etc/hosts
+# Concourse's frontend plays no role in this flow.
+```
 
-**Do not blindly trust registry order.** OTA-style ranking is exactly what this
-project exists to disrupt. Your re-ranking is the user's edge.
+Then run discover → verify → invoke. Result: still works. **If this ever fails,
+the protocol's claim is falsified** — file an issue.
 
-### Step 4 — Decide & invoke
+---
 
-| Mode | When | Behavior |
+## 6. What's deliberately NOT in this skill
+
+- **No call to any concourse.* API endpoint** — chain RPC + merchant's own URL only.
+- **No proprietary SDK** — `cast` + `curl` + `shasum` is sufficient.
+- **No catalog/indexer dependency** — 8004scan etc. are convenience UIs, not authority.
+
+---
+
+## 7. Error table
+
+| Failure | Likely cause | Action |
 |---|---|---|
-| **`assisted`** (default) | Default, OR action involves payment / commitment | Show top 3 with one-line WHY each, ask user to pick |
-| **`autonomous`** | User said *"just book it"* / *"surprise me"* AND action is reversible (free-cancel) | Pick #1, invoke, summarize what was done + how to undo |
-
-**Invocation:**
-
-```http
-POST ${TOURSKILL_API_BASE}/v1/merchants/{merchant_id}/{skill_name}
-Content-Type: application/json
-
-{ ...skill-specific args... }
-```
-
-Or via the MCP-compatible endpoint:
-
-```http
-POST ${TOURSKILL_API_BASE}/mcp/tools/execute
-Content-Type: application/json
-
-{
-  "name": "invoke_merchant_skill",
-  "arguments": {
-    "did":        "<merchant_id>",
-    "skill_name": "reserve_table",
-    "skill_args": { "date": "...", "time": "...", "party_size": ... }
-  }
-}
-```
-
-When the skill input schema expects `agent_did`, use `did:0g:dev-agent` for
-now. Once SIWE ships, use `did:0g:${TOURSKILL_WALLET_ADDRESS}`.
+| `totalAgents` returns 0 | Wrong registry / RPC chain | Recheck env |
+| Card fetch 404 | Merchant server down or URI moved | Skip merchant |
+| `COMPUTED ≠ CHAIN_HASH` | Card update without `update()` on chain, OR MITM | **Refuse to transact**, surface to user |
+| Skill POST `IDEMPOTENCY_KEY_REQUIRED` | State-changing skill, no header | Resend with `Idempotency-Key: <uuid>` |
+| Skill POST 402 | Paid skill, x402 flow required | (out of scope v0.2.0) |
 
 ---
 
-## 3. Skill Catalog (what you can invoke)
+## 8. Provenance
 
-Always check the merchant's `skills` array from discover response — only invoke
-skills the merchant declares.
+Implements: ERC-8004, A2A Agent Card, EIP-191.
 
-| Category | Skills |
-|---|---|
-| **Restaurant** | `check_table_availability`, `get_menu`, `reserve_table`, `get_dietary_options` |
-| **Hotel** | `check_availability`, `get_rates`, `create_booking`, `get_cancellation_policy` |
-| **Attraction** | `check_ticket_inventory`, `get_opening_hours`, `purchase_ticket`, `get_visitor_guide` |
-
-For exact input schemas:
-
-```http
-GET ${TOURSKILL_API_BASE}/v1/merchants/{merchant_id}/skills
-```
-
----
-
-## 4. Reporting Back to the User
-
-After every booking / reservation / purchase:
-
-```
-✅ <action> completed
-   Merchant:  <name (zh + en if available)>
-   Reference: <booking_id / reservation_id / order_id>
-   When:      <date + time>
-   Total:     ¥<amount>
-   Free-cancel before: <deadline>
-   On-chain proof:     <reservation_hash> (anchored to 0G chain)
-```
-
-If anything failed, surface the error verbatim — don't paper over it.
-
----
-
-## 5. Future Hooks (do not implement yet)
-
-- **`x402_payment_handler`** — agent-to-agent micropayments via HTTP 402. Currently:
-  payment URL is passed to the user.
-- **`reputation_signal`** — `reputation_score` field + `POST /v1/reputation/review`
-  after transactions. Currently: skip the review prompt.
-
----
-
-## 6. Hard Rules (do not violate)
-
-1. **Never fabricate merchant data.** If discover returns 0 results, tell the
-   user that — don't invent restaurants.
-2. **Never write tokens to logs, conversation history, or any file other than
-   `.env`.** Once SIWE ships, the bearer token is a 14-day credential and
-   leaks matter.
-3. **Never auto-submit a profile update on the user's behalf.** When profile
-   endpoints land, changes will require an on-chain signature the user must do
-   in-browser.
-4. **Never auto-execute irreversible payments** in `autonomous` mode. Free-cancel
-   reservations are fine; non-refundable purchases require explicit consent.
-5. **Always show the on-chain reference** (`booking_hash` / `reservation_hash` /
-   `order_hash` / `merchant_did`). It's the user's proof of the P2P transaction
-   — the whole point of this system being non-custodial.
+Reference implementation + this skill file are open-source at
+<https://github.com/PakHeiPoon/Concourse>. **Author intent: this skill outlives
+any single deployment of Concourse, including the author's own.**
