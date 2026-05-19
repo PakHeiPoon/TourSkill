@@ -1,65 +1,67 @@
 <h1 align="center">Concourse</h1>
 
 <p align="center">
-  <strong>An open protocol layer where AI agents discover, verify, and transact directly.<br />Agent-to-Agent. Peer-to-Peer. No platform in the critical path.</strong>
+  <strong>The protocol layer that makes the platform optional.</strong>
 </p>
 
 <p align="center">
-  <em>Built on ERC-8004 Trustless Agents · A2A Agent Card · x402 micropayments.</em>
+  <em>An open way for AI agents to find, verify, and transact with each other directly — with no marketplace, no gateway, no company anyone has to trust beyond the math itself.</em>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@concourse-protocol/discover"><img src="https://img.shields.io/npm/v/@concourse-protocol/discover?label=%40concourse-protocol%2Fdiscover&color=cb3837" alt="npm" /></a>
+  <a href="https://www.npmjs.com/package/@concourse-protocol/discover"><img src="https://img.shields.io/npm/v/@concourse-protocol/discover?label=npm&color=cb3837" alt="npm" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow" alt="License: MIT" /></a>
   <a href="https://github.com/PakHeiPoon/Concourse/actions"><img src="https://img.shields.io/github/actions/workflow/status/PakHeiPoon/Concourse/publish-discover-cli.yml?label=CI" alt="CI" /></a>
   <a href="./README_ZH.md"><img src="https://img.shields.io/badge/中文-Readme-orange" alt="中文" /></a>
 </p>
 
 <p align="center">
-  <img src="docs/diagrams/architecture-protocol.png" alt="Concourse 3-layer architecture + 4-step P2P protocol — no gateway between layers" width="900" />
+  <img src="docs/diagrams/architecture-protocol.png" alt="Today every transaction routes through a platform. With Concourse, agents meet directly." width="900" />
 </p>
 
 ---
 
-## Thesis
+## The problem
 
-> Concourse is a falsifiable proof that AI agents can **discover, verify, and transact** with each other **without any platform intermediary** in the operational critical path.
+Every digital transaction today flows through a platform — Booking, Uber, OpenAI plugins, Anthropic MCP catalogs, Coinbase AgentKit. The platform decides who's visible, who's trusted, and how much they take. AI agents are inheriting this same model: discovery, ranking, and even API calls flow through a vendor gateway. If the vendor disappears, so does your access.
 
-If you can complete a booking using only a public Base RPC, SHA-256, and HTTPS — Concourse the company is operationally dispensable. That is the point.
+## What Concourse defines
 
-## The 4-step protocol
+A way for two AI agents — one acting for a user, one acting for a merchant — to **find each other, verify each other, and transact**, with nothing in between except:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ① DISCOVER   eth_call → IdentityRegistry.getAgent(id)          │
-│  ② FETCH      GET cardURI                                       │
-│  ③ VERIFY     sha256(bytes) == cardHash ?       → no → ABORT    │
-│  ④ INVOKE     POST card.url + skill.endpoint                    │
-└─────────────────────────────────────────────────────────────────┘
-```
+- A **public registry** anyone can read.
+- A piece of **cryptographic math** anyone can run.
+- The **two parties' own servers**.
 
-Every step talks to **either Base chain RPC or the merchant's own URL**. No Concourse-operated server sits in between.
+No marketplace. No gateway API. No company you have to trust to stay online. The math itself is the trust.
 
-## Quick start (zero install)
+## What Concourse pioneers
+
+This repository is the **first falsifiable demonstration** that AI-agent commerce can run without a platform in the operational critical path.
+
+> **The claim:** Pull the plug on every Concourse server. Take the company offline. A user agent should still be able to discover a merchant, verify the merchant hasn't been tampered with, and complete a real transaction.
+>
+> **The proof:** Try it. The CLI below uses no Concourse-controlled infrastructure. If you can run it, the platform is operationally dispensable. That is the point.
+
+## See it in 30 seconds
 
 ```bash
-# List every agent on the registry
+# Find every merchant on the registry — no signup, no API key, no platform
 npx -y @concourse-protocol/discover list
 
-# Fetch + SHA-256 verify a card against the on-chain commit
+# Verify a merchant's listing hasn't been tampered with — math, not trust
 npx -y @concourse-protocol/discover fetch 1
 
-# Show available skills (verified before display)
-npx -y @concourse-protocol/discover skills 1
-
-# Invoke a skill end-to-end (verify → POST with auto Idempotency-Key)
+# Book directly — your agent talks to the merchant's agent, no one else
 npx -y @concourse-protocol/discover invoke 1 check_availability \
   -d '{"check_in":"2026-09-01","check_out":"2026-09-03","room_type":"mountain_view"}'
 ```
 
-Defaults to Base Sepolia + the canonical IdentityRegistry at `0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f`. Override with `CONCOURSE_RPC_URL`, `CONCOURSE_REGISTRY`, `CONCOURSE_CHAIN_ID`.
+If you finished that walkthrough, you just transacted with a merchant without touching any platform — including ours.
 
-## MCP server (Claude Desktop / Cursor / any MCP host)
+## How to plug it into Claude Desktop, Cursor, or any AI agent
+
+Add this to your MCP config:
 
 ```json
 {
@@ -72,87 +74,64 @@ Defaults to Base Sepolia + the canonical IdentityRegistry at `0xBdE5A55D50d2062F
 }
 ```
 
-Exposes 4 tools — `concourse_list_agents`, `concourse_verify_card`, `concourse_list_skills`, `concourse_invoke_skill`. Every call begins with on-chain SHA-256 verification.
-
-## Architecture
-
-```
-                  ON-CHAIN  ·  Base Sepolia                           
-       ┌──────────────────────────────────────────────┐
-       │  IdentityRegistry  ·  0xBdE5…A29f (immutable)│
-       │  ReputationRegistry  ·  ValidationRegistry   │
-       │  struct Agent { owner, cardURI, cardHash,    │
-       │                 registeredAt, updatedAt,     │
-       │                 active }                     │
-       └──────────────────────────────────────────────┘
-                ▲                              ▲
-                │ getAgent(id)                 │ register / update
-                │                              │ (merchant signs)
-                ▼                              ▼
-   ┌─────────────────────┐         ┌────────────────────────────┐
-   │   USER AGENT  · AI  │ ◄────► │  MERCHANT AGENT · self-host │
-   │   (Claude/Cursor)   │  HTTPS  │  Hono + Drizzle + viem      │
-   │   loads SKILL.md as │         │  /.well-known/agent-card    │
-   │   protocol manual   │         │  /auth/challenge · /verify  │
-   └─────────────────────┘         │  /skills/<name>             │
-                                   └────────────────────────────┘
-
-           ⚠️ NO Concourse-controlled gateway between any of these layers
-```
+Your AI agent now has four new tools — list merchants, verify them, see their skills, book — all running over the open protocol. No vendor gateway in the loop.
 
 ## What's in this repo
 
-| Path | What it is |
+| Path | What it gives you |
 |---|---|
-| [`contracts/erc8004/`](./contracts/erc8004/) | Foundry — `IdentityRegistry` + `ReputationRegistry` + `ValidationRegistry` + tests + Deploy script. Solidity 0.8.24, evmVersion `cancun`, 73 tests at 100% coverage. |
-| [`merchant-agent-template/`](./merchant-agent-template/) | Open-source reference implementation a merchant clones to become a sovereign agent. Hono + Drizzle + better-sqlite3 + viem. EIP-191 auth, canonical-JSON cards, SHA-256 anchored on chain. |
-| [`packages/discover-cli/`](./packages/discover-cli/) | `@concourse-protocol/discover` — CLI + MCP server. The executable form of `SKILL.md`. Auto-publishes on `discover-cli-v*` tag push. |
-| [`backend/skills/`](./backend/skills/) | Two SKILL.md files. `user-client/SKILL.md` teaches an AI agent the protocol; `merchant-client/SKILL.md` teaches it how to onboard a merchant. **The SKILL files are the protocol manuals — load them into any LLM, they don't need this repo to function.** |
-| [`docs/architecture/`](./docs/architecture/) | Design notes — agent-card schema, reputation model, x402 payment flow, migration plan. |
-| [`frontend/`](./frontend/) | Reference UI at [concourse.paking.xyz](https://concourse.paking.xyz). Reads `IdentityRegistry` directly via ethers v6 — no backend proxy. |
-| [`backend/`](./backend/) | Optional FastAPI side-service (auth helpers + indexer cache for the reference UI). The protocol does not depend on it. |
-
-## Releases
-
-| Resource | URL |
-|---|---|
-| npm | https://www.npmjs.com/package/@concourse-protocol/discover |
-| GitHub Releases | https://github.com/PakHeiPoon/Concourse/releases |
-| Live agent #1 | https://wumingchu.concourse.paking.xyz/.well-known/agent-card.json |
-| Live indexer UI | https://concourse.paking.xyz |
+| [`packages/discover-cli/`](./packages/discover-cli/) | The CLI + MCP server you just ran. Install it anywhere, talk to any registered merchant. |
+| [`merchant-agent-template/`](./merchant-agent-template/) | A merchant clones this to **become** an agent. They own the server, the keys, and the listing — no Concourse account exists. |
+| [`backend/skills/`](./backend/skills/) | Two SKILL files — protocol manuals an AI agent loads to learn the rules. Load them into any LLM and it doesn't need this repo anymore. |
+| [`contracts/erc8004/`](./contracts/erc8004/) | The public registry the protocol relies on. Anyone can read it. Nobody can edit it after deployment. |
+| [`docs/architecture/`](./docs/architecture/) | The design notes — why each piece exists, what it doesn't try to be. |
+| [`frontend/`](./frontend/) | A reference website showing the registry. It's optional — the protocol works fine without it. |
 
 ## Roadmap
 
-| Status | Phase |
+| Status | What it gets you |
 |---|---|
-| ✅ Live | ERC-8004 contracts on Base Sepolia, Basescan-verified, 73 tests passing |
-| ✅ Live | Merchant agent template (Hono + viem + EIP-191 auth, 5 hotel skills) |
-| ✅ Live | First agent — Wuming Chu · Huangshan (agentId=1) |
-| ✅ Live | Trustless `/explorer` — reads chain directly, browser-side SHA-256 verification |
-| ✅ Live | `@concourse-protocol/discover` CLI + MCP — zero-install protocol client |
-| 🟡 Building | Canonical mainnet via shared ERC-8004 address |
-| 🟡 Building | EIP-191 signed bearer auth in CLI |
-| 📋 Planned | x402 paid-skill USDC micropayments (EIP-3009) |
-| 📋 Planned | BookingEscrow (EIP-712 Seaport-style) + settlement-gated ReputationRegistry hook |
-| 📋 Planned | Multi-tenant SaaS hosting for non-technical merchants |
+| ✅ Live | A user can discover any merchant, verify they're real, and call their skills — without trusting any company. |
+| ✅ Live | A merchant can self-host, get listed, and be reached by any AI agent — without paying a platform or asking for permission. |
+| ✅ Live | A developer can install the protocol in one line (`npx @concourse-protocol/discover`) and run it from any machine. |
+| 🟡 Building | Pay-per-call payments so merchants can charge for premium skills directly — no payment processor in the loop. |
+| 📋 Planned | Held-funds escrow + reputation that's earned only by completing real transactions — no fake reviews possible by construction. |
+| 📋 Planned | A managed hosting tier for merchants who don't want to run their own server — completely optional. |
 
-See [`docs/architecture/07_MIGRATION_PLAN.md`](./docs/architecture/07_MIGRATION_PLAN.md) for the full plan.
-
-## Prove the platform is dispensable (adversarial test)
+## Prove the platform is dispensable (try this)
 
 ```bash
-# 1. Pick any third-party RPC — not concourse.paking.xyz
+# 1. Use a third-party RPC provider — not anything we control
 export CONCOURSE_RPC_URL=https://base-sepolia.public.blastapi.io
 
-# 2. Black-hole the Concourse frontend (optional)
+# 2. Block our website at the DNS level (optional)
 echo "0.0.0.0  concourse.paking.xyz" | sudo tee -a /etc/hosts
 
-# 3. Run the full discover → verify → invoke loop. It should still succeed.
+# 3. Run the full discover → verify → invoke loop. It should still work.
 npx -y @concourse-protocol/discover list
 npx -y @concourse-protocol/discover invoke 1 get_room_types
 ```
 
-If this ever fails, the thesis is falsified — file an issue.
+If this ever stops working, the claim is falsified. Open an issue.
+
+---
+
+<details>
+<summary><strong>Under the hood</strong> (technical readers)</summary>
+
+Concourse builds on three open standards:
+
+- **ERC-8004** — public on-chain identity registry. Anyone reads, owners write, no admin.
+- **A2A Agent Card** — Google-published JSON descriptor at `/.well-known/agent-card.json` per merchant.
+- **x402** — Coinbase-published HTTP-native USDC micropayment scheme (planned for paid skills).
+
+A merchant's listing is reduced to three things stored on chain: `(owner_address, cardURI, sha256(card_bytes))`. Discovery is a single `eth_call`; verification is one HTTP GET plus one SHA-256 computation; invocation is an HTTP POST to the merchant's own URL. No Concourse-operated server is in this loop.
+
+Reference implementation choices: Foundry + Solidity 0.8.24 + `evmVersion = cancun` for the registry; Hono + Drizzle + better-sqlite3 + viem for the merchant agent template; EIP-191 challenge-response for session auth; canonical JSON serialization so the on-chain SHA-256 matches the served bytes byte-for-byte. Full design notes in [`docs/architecture/`](./docs/architecture/).
+
+The registry currently lives on Base Sepolia at [`0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f`](https://sepolia.basescan.org/address/0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f) (73 tests at 100% coverage). Mainnet migration uses the shared canonical ERC-8004 address so the broader ecosystem indexes us automatically.
+
+</details>
 
 ## License
 
